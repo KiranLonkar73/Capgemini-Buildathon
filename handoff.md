@@ -24,6 +24,7 @@
   - Backend uses local deterministic policy chunk retrieval and rule-based explainable analysis so it runs without external LLM keys.
   - Updated Chrome extension content script to call the backend, show loading/error states, rescan Gmail compose content, and insert rewrites into the compose body.
   - Updated extension popup to call backend analysis and apply rewrites to the popup draft.
+  - Committed and pushed production-spine commit `5907c75` to `origin/main`.
 
 ## Done
 - Initialized handoff tracking.
@@ -112,6 +113,7 @@
 - Extension build output for Chrome loading: `dist/extension`.
 - GitHub repo: `https://github.com/LakshyaKGupta/complylens-policy-checker`.
 - Current branch tracks `origin/main`.
+- Product code commit: `5907c75` (`Build routed compliance platform spine`); this handoff was updated after that push.
 - Web app screenshot artifacts from verification:
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-final.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-mobile.png`
