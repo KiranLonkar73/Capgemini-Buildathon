@@ -1,14 +1,39 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { motion } from "framer-motion";
-import { AlertTriangle, CheckCircle2, MailCheck, Shield, Wand2 } from "lucide-react";
-import { demoDocument, runDemoComplianceCheck } from "@complylens/shared";
+import { AlertTriangle, CheckCircle2, MailCheck, RefreshCw, Shield, Wand2 } from "lucide-react";
+import { API_BASE_URL, applyRewrite, demoDocument, runDemoComplianceCheck, type ComplianceReport } from "@complylens/shared";
 import "./popup.css";
 
 function Popup() {
   const [draft, setDraft] = useState(demoDocument.split("\n\n").slice(0, 3).join("\n\n"));
-  const report = useMemo(() => runDemoComplianceCheck(draft), [draft]);
+  const [report, setReport] = useState<ComplianceReport>(() => runDemoComplianceCheck(draft));
+  const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState("");
+  useEffect(() => {
+    setReport(runDemoComplianceCheck(draft));
+  }, [draft]);
   const firstViolation = report.violations[0];
+
+  async function scanDraft() {
+    setLoading(true);
+    setNotice("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: draft, documentName: "extension-popup-draft", threshold: 0.62 })
+      });
+      if (!response.ok) throw new Error(await response.text());
+      setReport((await response.json()) as ComplianceReport);
+      setNotice("Backend analysis complete.");
+    } catch (error) {
+      setReport(runDemoComplianceCheck(draft));
+      setNotice(`Backend unavailable. Showing seeded analysis.`);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="popup-shell">
@@ -17,7 +42,7 @@ function Popup() {
           <Shield size={18} />
         </div>
         <div>
-          <h1>PolicyGuard AI</h1>
+          <h1>ComplyLens</h1>
           <p>Gmail compliance check</p>
         </div>
       </header>
@@ -35,6 +60,12 @@ function Popup() {
 
       <textarea value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} />
 
+      <button className="scan-button" disabled={loading} onClick={() => void scanDraft()} type="button">
+        {loading ? <RefreshCw size={15} /> : <MailCheck size={15} />}
+        {loading ? "Scanning..." : "Scan with backend"}
+      </button>
+      {notice && <div className="popup-notice">{notice}</div>}
+
       {firstViolation ? (
         <motion.section animate={{ opacity: 1, y: 0 }} className="flag" initial={{ opacity: 0, y: 6 }}>
           <div className="flag-title">
@@ -46,7 +77,7 @@ function Popup() {
             <Wand2 size={15} />
             <span>{firstViolation.rewrite}</span>
           </div>
-          <button>Apply rewrite</button>
+          <button onClick={() => setDraft(applyRewrite(draft, firstViolation))} type="button">Apply rewrite</button>
         </motion.section>
       ) : (
         <section className="clean">

@@ -16,6 +16,14 @@
   - Cause was stale Vite optimized dependency cache after installing UI libraries.
   - Restarted dev server with `--force`.
   - Updated `dev:web` script to always run Vite with `--force`.
+- Completed a production-spine pass for ComplyLens:
+  - Added real routes for `/`, `/login`, `/signup`, `/dashboard`, `/policies`, `/extension`, and `/settings`.
+  - Built a premium landing page with the existing Three.js compliance scene as the hero intelligence background.
+  - Reworked the dashboard into a stateful analysis workflow with editable draft text, TXT/PDF/DOCX upload path, backend analysis, seeded fallback analysis, visible error/success notices, confidence threshold, severity filtering, dismiss/mark-safe, and apply-rewrite behavior.
+  - Added FastAPI backend in `backend/` with `/health`, `/upload-policy`, `/analyze`, `/analyze-upload`, `/rewrite`, and `/settings/company`.
+  - Backend uses local deterministic policy chunk retrieval and rule-based explainable analysis so it runs without external LLM keys.
+  - Updated Chrome extension content script to call the backend, show loading/error states, rescan Gmail compose content, and insert rewrites into the compose body.
+  - Updated extension popup to call backend analysis and apply rewrites to the popup draft.
 
 ## Done
 - Initialized handoff tracking.
@@ -76,21 +84,31 @@
   - Initialized git repository.
   - Created initial commit `8c6674b`.
   - Pushed to private GitHub repo `LakshyaKGupta/complylens-policy-checker`.
+- Current implementation verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - `python3 -m py_compile backend/app/*.py` passes.
+  - Backend smoke tests pass:
+    - `GET /health`
+    - `POST /analyze`
+  - Browser verification completed for desktop landing/dashboard and mobile landing with no app console errors.
 
 ## Yet To Be Done
-- Confirm whether to replace the stale EV project context or keep it separately.
-- Decide whether to refine the web dashboard visual density further before backend work.
-- Add real upload interactions on frontend when backend API contracts are defined.
-- Backend phase: add sample policies, parser, vector store ingestion, compliance checking endpoint, and UI report flow.
-- Add evaluation dataset and metrics.
-- Later: replace extension mock checker with calls to the backend `/check-compliance` endpoint.
-- Decide whether to migrate the web app from Vite to Next.js before backend work. This may help shadcn/Forge UI compatibility, but the Chrome extension should remain Vite-based.
+- Replace or archive stale EV content in `project_context.md` when user approves.
+- Add provider-backed embeddings/LLM reasoning behind the current backend API. Current backend is local deterministic retrieval, not an external LLM/RAG provider.
+- Add persistence for uploaded policy chunks and company settings; current backend store is in-memory.
+- Add evaluation dataset, precision/recall reporting, and false-positive metrics.
+- Add automated tests for backend analyzer/parser and frontend workflows.
+- Validate the Chrome extension inside a real Gmail compose window after loading `dist/extension` in Chrome.
+- Consider code-splitting the web bundle because Vite reports the main chunk is larger than 500 KB.
 
 ## Notes For Next Assistant
 - User wants this file updated after every chat/work session with current progress, completed work, and remaining tasks.
 - Use `/Users/lol/Downloads/29_Policy_Compliance_Checker.pdf` and `/Users/lol/Downloads/Policy_Compliance_Checker_Guide.docx` as source docs for this use case.
 - Be careful: `project_context.md` is likely stale from a different project.
 - Current frontend command: `npm run dev:web`.
+- Current backend command: `python3 -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`.
 - Extension build output for Chrome loading: `dist/extension`.
 - GitHub repo: `https://github.com/LakshyaKGupta/complylens-policy-checker`.
 - Current branch tracks `origin/main`.

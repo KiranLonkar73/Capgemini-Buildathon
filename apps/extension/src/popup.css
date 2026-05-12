@@ -43,7 +43,8 @@ header,
 .flag-title,
 .rewrite,
 .clean,
-footer {
+footer,
+.scan-button {
   display: flex;
   align-items: center;
 }
@@ -182,6 +183,22 @@ button {
   background: linear-gradient(135deg, #5b8cff, #6d7cf8);
   font-weight: 800;
   cursor: pointer;
+}
+
+.scan-button {
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.popup-notice {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgba(91, 140, 255, 0.25);
+  border-radius: 8px;
+  color: #bfdbfe;
+  background: rgba(91, 140, 255, 0.08);
+  line-height: 1.45;
 }
 
 .clean {

@@ -3,6 +3,8 @@ dist
 .env
 .env.local
 *.log
+__pycache__/
+*.py[cod]
 .playwright-mcp
 *.png
 *.tsbuildinfo
