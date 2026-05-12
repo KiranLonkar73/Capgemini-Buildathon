@@ -118,6 +118,8 @@
   - Initialized git repository.
   - Created initial commit `8c6674b`.
   - Pushed to private GitHub repo `LakshyaKGupta/complylens-policy-checker`.
+  - GitHub CLI is installed at `/opt/homebrew/bin/gh`, version `2.86.0`.
+  - GitHub CLI authentication is already active for account `LakshyaKGupta` with `repo`, `workflow`, `gist`, and `read:org` scopes.
 - Current implementation verification:
   - `npm run typecheck` passes.
   - `npm run build:web` passes.
