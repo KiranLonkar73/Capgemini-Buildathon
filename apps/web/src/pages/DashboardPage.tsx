@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { Activity, AlertTriangle, Bot, CheckCircle2, FileText, ShieldCheck, Upload } from "lucide-react";
+import { Activity, BarChart3, Bot, DatabaseZap, FileText, MailCheck, Network, ShieldCheck, Upload } from "lucide-react";
 import {
   applyRewrite,
   demoDocument,
@@ -20,7 +20,6 @@ import {
   dashboardMetrics,
   policySystems,
   riskHeatmap,
-  securityEvents,
   teamAnalytics,
   trendPoints
 } from "../data/productData";
@@ -112,14 +111,20 @@ export function DashboardPage() {
     <WorkspaceShell>
       <section className="ops-dashboard">
         <div className="dashboard-command">
-          <div>
+          <div className="command-copy">
             <span className="eyebrow">Compliance operations command center</span>
             <h1>Live policy intelligence across enterprise communication.</h1>
             <p>Monitor active scans, policy systems, rewrite activity, and high-confidence risk signals in one operating surface.</p>
           </div>
-          <div className="command-status">
-            <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
-            {loading ? "AI scan running" : report.source === "backend" ? "Backend connected" : "Seeded demo mode"}
+          <div className="command-side">
+            <div className="command-status">
+              <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
+              {loading ? "AI scan running" : report.source === "backend" ? "Backend connected" : "Seeded demo mode"}
+            </div>
+            <div className="command-mini-grid">
+              <span><DatabaseZap size={15} /> {policySystems.length} active policy sets</span>
+              <span><MailCheck size={15} /> Gmail-ready workflow</span>
+            </div>
           </div>
         </div>
 
@@ -131,6 +136,30 @@ export function DashboardPage() {
               <em>{metric.delta}</em>
             </article>
           ))}
+        </div>
+
+        <div className="dashboard-focus-strip" aria-label="Operational focus areas">
+          <article>
+            <span className="premium-icon"><Network size={18} /></span>
+            <div>
+              <strong>Policy memory online</strong>
+              <p>{policySystems[0].coverage}% coverage across customer data and commercial communication controls.</p>
+            </div>
+          </article>
+          <article>
+            <span className="premium-icon"><Bot size={18} /></span>
+            <div>
+              <strong>{visibleViolations.length || report.flaggedSections} findings in review</strong>
+              <p>Threshold set to {Math.round(threshold * 100)}%; dismissed findings stay auditable.</p>
+            </div>
+          </article>
+          <article>
+            <span className="premium-icon"><BarChart3 size={18} /></span>
+            <div>
+              <strong>Risk trend improving</strong>
+              <p>Rewrite-assisted teams are resolving high-risk language before escalation.</p>
+            </div>
+          </article>
         </div>
 
         <div className="ops-grid">
@@ -207,15 +236,6 @@ export function DashboardPage() {
             </div>
           </section>
 
-          <section className="ops-card">
-            <PanelTitle label="Security events" title="Recent interventions" />
-            <div className="security-list">
-              {securityEvents.map((event) => (
-                <div key={event}><AlertTriangle size={15} />{event}</div>
-              ))}
-            </div>
-          </section>
-
           <section className="ops-card wide">
             <PanelTitle label="Enterprise communication activity" title="Audit and workflow history" />
             <div className="activity-feed">
@@ -228,33 +248,6 @@ export function DashboardPage() {
                   </div>
                   <time>{activity.time}</time>
                 </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="ops-card">
-            <PanelTitle label="Team analytics" title="Risk by team" />
-            <div className="team-table">
-              {teamAnalytics.map((team) => (
-                <div key={team.team}>
-                  <span>{team.team}</span>
-                  <strong>{team.score}%</strong>
-                  <small>{team.scanned} scans · {team.risks} risks</small>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="ops-card">
-            <PanelTitle label="Active policy systems" title="Coverage and passages" />
-            <div className="policy-system-list">
-              {policySystems.map((policy) => (
-                <div key={policy.name}>
-                  <ShieldCheck size={16} />
-                  <span>{policy.name}</span>
-                  <strong>{policy.coverage}%</strong>
-                  <small>{policy.passages} passages · {policy.owner}</small>
-                </div>
               ))}
             </div>
           </section>
@@ -281,11 +274,27 @@ export function DashboardPage() {
             </div>
           </section>
 
-          <section className="ops-card rewrite-queue">
-            <PanelTitle label="Rewrite suggestions" title="AI-safe alternatives" />
-            <div><CheckCircle2 size={16} /> Legal-safe delivery target language ready</div>
-            <div><CheckCircle2 size={16} /> Secure transfer wording applied to vendor draft</div>
-            <div><CheckCircle2 size={16} /> Compensation disclosure removed from internal note</div>
+          <section className="ops-card team-policy-card">
+            <PanelTitle label="Teams and policy coverage" title="Where risk is concentrated" />
+            <div className="team-table">
+              {teamAnalytics.slice(0, 3).map((team) => (
+                <div key={team.team}>
+                  <span>{team.team}</span>
+                  <strong>{team.score}%</strong>
+                  <small>{team.scanned} scans · {team.risks} risks</small>
+                </div>
+              ))}
+            </div>
+            <div className="policy-system-list compact-systems">
+              {policySystems.slice(0, 2).map((policy) => (
+                <div key={policy.name}>
+                  <ShieldCheck size={16} />
+                  <span>{policy.name}</span>
+                  <strong>{policy.coverage}%</strong>
+                  <small>{policy.passages} passages · {policy.owner}</small>
+                </div>
+              ))}
+            </div>
           </section>
         </div>
       </section>

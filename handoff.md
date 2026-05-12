@@ -50,6 +50,14 @@
   - Added restrained 3D-style depth, floating panels, scan motion, and section reveal animations.
   - Tightened desktop and mobile section sizing so the homepage feels clearer and less clustered.
   - Verified desktop and mobile homepage rendering in Playwright.
+- Completed dashboard-specific pending work:
+  - Simplified the dashboard from a dense multi-panel page into a cleaner operational cockpit.
+  - Added a structured command summary with backend/demo status, active policy set count, and Gmail readiness.
+  - Added a focused operational strip for policy memory, active findings, and risk trend context.
+  - Preserved the real document upload, backend analysis, rewrite, dismiss, mark-safe, threshold, and severity filter workflows.
+  - Reduced lower analytics clutter by consolidating team and policy coverage into one card and removing redundant security/rewrite panels from the main dashboard surface.
+  - Fixed mobile workspace header row sizing so the dashboard content no longer slides under the two-row mobile nav.
+  - Verified dashboard rendering in Playwright on desktop and mobile.
 
 ## Done
 - Initialized handoff tracking.
@@ -144,6 +152,12 @@
   - `npm run build:extension` passes.
   - Browser verified `http://localhost:5173/` at `1440x900` and `390x844`.
   - Dev console only showed the standard React DevTools development info message.
+- Dashboard pending-work verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - `python3 -m py_compile backend/app/*.py` passes.
+  - Browser verified `/dashboard` at `1440x900` and `390x844`.
 
 ## Yet To Be Done
 - Replace or archive stale EV content in `project_context.md` when user approves.
@@ -156,7 +170,7 @@
 - Further split extension content script into separate files if the extension grows; current file is modularized internally but still one Vite entry file.
 - Add true multiple-compose Gmail support; current content script still targets the first matching compose body.
 - Replace local JSON backend persistence with a real DB/vector store when moving beyond demo deployment.
-- Continue dashboard-specific redesign next; user explicitly said the dashboard will be handled after this frontend landing pass.
+- Continue remaining backend/RAG/evaluation/testing work when the user wants to move beyond frontend polish.
 
 ## Notes For Next Assistant
 - User wants this file updated after every chat/work session with current progress, completed work, and remaining tasks.
@@ -174,3 +188,5 @@
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-extension-popup.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-home-desktop-finalcheck.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-home-mobile-after.png`
+  - `/Users/lol/Docs/antigravity/capgmeini/complylens-dashboard-redesign-desktop.png`
+  - `/Users/lol/Docs/antigravity/capgmeini/complylens-dashboard-redesign-mobile-fixed.png`
