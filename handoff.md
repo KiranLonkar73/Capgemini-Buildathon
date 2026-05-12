@@ -9,6 +9,9 @@
 - Discussed Gmail usage approach: best product direction is a combined system where the web app is the core compliance engine and a browser extension is a Gmail integration layer that sends email drafts to the backend for checking.
 - Built the frontend foundation for the combined web app + Gmail extension approach.
 - Web app dev server is running at `http://localhost:5173/`.
+- User requested Animate UI, Forge UI, and Vengeance UI setup plus GitHub repo creation.
+- Tailwind v4, shadcn-compatible registry config, Animate UI registry component, and Vengeance UI registry component are installed.
+- GitHub repo created and pushed: `https://github.com/LakshyaKGupta/complylens-policy-checker` (private).
 
 ## Done
 - Initialized handoff tracking.
@@ -54,6 +57,21 @@
   - `npm run typecheck` passes.
   - Playwright verified web app at desktop and mobile widths.
   - Playwright verified extension popup by serving built `dist/extension`.
+- Added UI-library readiness:
+  - Tailwind CSS v4 via `@tailwindcss/vite`.
+  - `tw-animate-css`.
+  - shadcn `components.json` with registries for `@animate-ui` and `@vengenceui`.
+  - Animate UI component installed at `apps/web/src/components/animate-ui/primitives/texts/sliding-number.tsx`.
+  - Vengeance UI animated button installed at `apps/web/src/components/ui/animated-button.tsx`.
+  - Shared utility `cn()` added at `apps/web/src/lib/utils.ts`.
+- Forge UI note:
+  - `@forge-ui-official/core` exists, but currently requires React >=19 and Next >=15.
+  - Current project is React 18 + Vite because the Chrome extension needs Vite output.
+  - Do not force-install Forge UI until/unless the web app migrates to Next 15 / React 19 or a compatible registry URL is provided.
+- Git/GitHub:
+  - Initialized git repository.
+  - Created initial commit `8c6674b`.
+  - Pushed to private GitHub repo `LakshyaKGupta/complylens-policy-checker`.
 
 ## Yet To Be Done
 - Confirm whether to replace the stale EV project context or keep it separately.
@@ -62,6 +80,7 @@
 - Backend phase: add sample policies, parser, vector store ingestion, compliance checking endpoint, and UI report flow.
 - Add evaluation dataset and metrics.
 - Later: replace extension mock checker with calls to the backend `/check-compliance` endpoint.
+- Decide whether to migrate the web app from Vite to Next.js before backend work. This may help shadcn/Forge UI compatibility, but the Chrome extension should remain Vite-based.
 
 ## Notes For Next Assistant
 - User wants this file updated after every chat/work session with current progress, completed work, and remaining tasks.
@@ -69,6 +88,8 @@
 - Be careful: `project_context.md` is likely stale from a different project.
 - Current frontend command: `npm run dev:web`.
 - Extension build output for Chrome loading: `dist/extension`.
+- GitHub repo: `https://github.com/LakshyaKGupta/complylens-policy-checker`.
+- Current branch tracks `origin/main`.
 - Web app screenshot artifacts from verification:
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-final.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-mobile.png`
