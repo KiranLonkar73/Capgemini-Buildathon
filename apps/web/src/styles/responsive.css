@@ -1,0 +1,50 @@
+.status-bar {
+  gap: 18px;
+  min-width: 0;
+  padding: 0 20px;
+  border-top: 1px solid var(--line);
+  background: rgba(8, 13, 27, 0.92);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.status-bar div { gap: 7px; flex: 0 0 auto; color: var(--muted); font-size: 0.78rem; }
+.status-bar svg { color: var(--blue); }
+
+@keyframes ai-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(91, 140, 255, 0.52); }
+  70% { box-shadow: 0 0 0 9px rgba(91, 140, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(91, 140, 255, 0); }
+}
+
+@media (max-width: 1100px) {
+  .workspace-nav { grid-template-columns: 1fr auto; }
+  .workspace-nav nav { display: none; }
+  .workspace-layout { grid-template-columns: 270px minmax(0, 1fr); overflow: auto; height: auto; }
+  .findings-sidebar { grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+  .site-nav, .auth-layout, .section-grid, .extension-showcase { grid-template-columns: 1fr; }
+  .site-nav nav { display: none; }
+  .workflow-steps { grid-template-columns: 1fr; }
+  .auth-layout { min-height: auto; }
+  .workspace-layout { grid-template-columns: 1fr; }
+  .policy-sidebar, .review-canvas, .findings-sidebar { min-height: auto; }
+  .review-canvas { min-height: 720px; }
+  .findings-sidebar { grid-template-columns: 1fr; }
+  .trust-section { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 680px) {
+  .site-nav, .workspace-nav { grid-template-columns: 1fr; gap: 12px; padding: 14px; }
+  .workspace-actions { width: 100%; }
+  .workspace-actions > * { flex: 1; }
+  .hero-section { min-height: auto; padding: 56px 16px; }
+  .hero-content h1, .auth-copy h1 { font-size: 2.35rem; }
+  .section-grid, .workflow-section, .trust-section, .page-panel, .auth-layout { width: calc(100% - 24px); }
+  .workspace-shell { grid-template-rows: auto minmax(0, 1fr) auto; }
+  .workspace-layout { padding: 12px; }
+  .review-header, .document-toolbar { align-items: flex-start; flex-direction: column; }
+  .document-toolbar div { width: 100%; flex-wrap: wrap; }
+  .document-toolbar button { flex: 1; }
+}

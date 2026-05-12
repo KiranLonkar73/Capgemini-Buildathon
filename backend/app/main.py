@@ -1,22 +1,21 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from .analyzer import analyze_text
 from .models import AnalyzeRequest, CompanySettings, HealthResponse, RewriteRequest, RewriteResponse
 from .parser import extract_text_from_upload
-from .policy_store import PolicyStore
+from .services import ComplianceService
 
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("complylens")
 
 app = FastAPI(title="ComplyLens API", version="0.1.0")
-store = PolicyStore()
-settings = CompanySettings()
+service = ComplianceService(Path(__file__).resolve().parents[1] / "data" / "state.json")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,13 +29,12 @@ app.add_middleware(
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
-    return HealthResponse(ok=True, service="complylens-api", policy_chunks=store.chunk_count)
+    return HealthResponse(ok=True, service="complylens-api", policy_chunks=service.policy_chunk_count)
 
 
 @app.post("/settings/company", response_model=CompanySettings)
 def update_company(payload: CompanySettings) -> CompanySettings:
-    global settings
-    settings = payload
+    settings = service.update_settings(payload)
     logger.info("updated company settings organization=%s threshold=%s", payload.organizationId, payload.threshold)
     return settings
 
@@ -56,8 +54,8 @@ async def upload_policy(
     if not text.strip():
         raise HTTPException(status_code=400, detail="Uploaded policy did not contain extractable text.")
 
-    references = store.add_policy_text(text=text, policy=policy_name, section=section, owner=owner)
-    logger.info("uploaded policy file=%s chunks=%s total=%s", file.filename, len(references), store.chunk_count)
+    references = service.upload_policy(text=text, policy_name=policy_name, section=section, owner=owner)
+    logger.info("uploaded policy file=%s chunks=%s total=%s", file.filename, len(references), service.policy_chunk_count)
     return {"uploaded": True, "chunks": len(references), "references": references}
 
 
@@ -65,7 +63,7 @@ async def upload_policy(
 def analyze(payload: AnalyzeRequest):
     if not payload.text.strip():
         raise HTTPException(status_code=400, detail="Text is required for analysis.")
-    report = analyze_text(payload.text, store, payload.threshold)
+    report = service.analyze(payload)
     logger.info(
         "analysis document=%s score=%s violations=%s",
         payload.documentName or "untitled",
@@ -85,7 +83,7 @@ async def analyze_upload(file: UploadFile = File(...), threshold: float = Form(0
     if not text.strip():
         raise HTTPException(status_code=400, detail="Uploaded document did not contain extractable text.")
 
-    report = analyze_text(text, store, threshold)
+    report = service.analyze(AnalyzeRequest(text=text, documentName=file.filename, threshold=threshold))
     logger.info("upload analysis document=%s score=%s violations=%s", file.filename, report.score, report.flaggedSections)
     return {"text": text, "report": report}
 

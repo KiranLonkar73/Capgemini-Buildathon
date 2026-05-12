@@ -80,13 +80,18 @@ def chunk_text(text: str, max_words: int = 90) -> list[str]:
 class PolicyStore:
     def __init__(self) -> None:
         self._chunks: list[PolicyChunk] = []
-        self.load_seed_policies()
 
     @property
     def chunk_count(self) -> int:
         return len(self._chunks)
 
+    @property
+    def references(self) -> list[PolicyReference]:
+        return [chunk.reference for chunk in self._chunks]
+
     def load_seed_policies(self) -> None:
+        if self._chunks:
+            return
         for policy in SEED_POLICIES:
             self.add_policy_text(
                 text=policy["text"],
@@ -94,6 +99,9 @@ class PolicyStore:
                 section=policy["section"],
                 owner=policy["owner"],
             )
+
+    def load_references(self, references: list[PolicyReference]) -> None:
+        self._chunks = [PolicyChunk(reference=reference, vector=vectorize(reference.text)) for reference in references]
 
     def add_policy_text(self, text: str, policy: str, section: str = "Uploaded policy", owner: str = "Compliance") -> list[PolicyReference]:
         references: list[PolicyReference] = []

@@ -2,6 +2,9 @@ import { API_BASE_URL, applyRewrite, runDemoComplianceCheck, type ComplianceRepo
 
 const PANEL_ID = "complylens-gmail-panel";
 const BUTTON_ID = "complylens-gmail-button";
+
+type PanelState = "loading" | "ready" | "error";
+
 let latestReport: ComplianceReport | null = null;
 let latestText = "";
 let scanTimer = 0;
@@ -23,68 +26,162 @@ function setComposeText(text: string) {
   return true;
 }
 
+async function analyzeDraft(text: string) {
+  const response = await fetch(`${API_BASE_URL}/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, documentName: "gmail-draft", threshold: 0.62 })
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return (await response.json()) as ComplianceReport;
+}
+
+function setStyles(element: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
+  Object.assign(element.style, styles);
+}
+
+function createElement<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  options: { text?: string; id?: string; styles?: Partial<CSSStyleDeclaration>; className?: string } = {}
+) {
+  const element = document.createElement(tag);
+  if (options.id) element.id = options.id;
+  if (options.className) element.className = options.className;
+  if (options.text) element.textContent = options.text;
+  if (options.styles) setStyles(element, options.styles);
+  return element;
+}
+
 function ensurePanel() {
   let panel = document.getElementById(PANEL_ID);
   if (panel) return panel;
 
-  panel = document.createElement("aside");
-  panel.id = PANEL_ID;
-  panel.style.cssText = [
-    "position:fixed",
-    "right:22px",
-    "bottom:22px",
-    "z-index:2147483647",
-    "width:340px",
-    "padding:14px",
-    "border:1px solid rgba(148,163,184,.22)",
-    "border-radius:8px",
-    "background:#121a2f",
-    "color:#e5e7eb",
-    "font:14px Geist,Inter,system-ui,sans-serif",
-    "box-shadow:0 20px 60px rgba(0,0,0,.32)"
-  ].join(";");
+  panel = createElement("aside", { id: PANEL_ID });
+  setStyles(panel, {
+    position: "fixed",
+    right: "22px",
+    bottom: "22px",
+    zIndex: "2147483647",
+    width: "340px",
+    padding: "14px",
+    border: "1px solid rgba(148,163,184,.22)",
+    borderRadius: "8px",
+    background: "#121a2f",
+    color: "#e5e7eb",
+    font: "14px Geist,Inter,system-ui,sans-serif",
+    boxShadow: "0 20px 60px rgba(0,0,0,.32)"
+  });
   document.body.appendChild(panel);
   return panel;
 }
 
-function renderPanel(state: "idle" | "loading" | "ready" | "error", message = "") {
-  const panel = ensurePanel();
-  const report = latestReport;
-  const firstViolation = report?.violations[0];
-  panel.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
-      <strong style="font-size:15px">ComplyLens Gmail</strong>
-      <span style="color:${report?.flaggedSections ? "#f59e0b" : "#22c55e"};font-weight:800">${report ? `${report.score}%` : "Ready"}</span>
-    </div>
-    ${
-      state === "loading"
-        ? `<div style="color:#94a3b8;line-height:1.45">Scanning current Gmail draft against company policy...</div>`
-        : state === "error"
-          ? `<div style="color:#fecaca;line-height:1.45">${message}</div>`
-          : firstViolation
-            ? `<div style="color:#f59e0b;font-weight:800;margin-bottom:8px">${firstViolation.policySection}</div>
-               <div style="color:#94a3b8;line-height:1.45;margin-bottom:10px">${firstViolation.explanation}</div>
-               <div style="padding:10px;border:1px solid rgba(34,197,94,.22);border-radius:8px;background:rgba(34,197,94,.08);line-height:1.45">${firstViolation.rewrite}</div>
-               <button id="complylens-apply-rewrite" style="width:100%;height:38px;margin-top:10px;border:1px solid rgba(91,140,255,.45);border-radius:8px;background:#5b8cff;color:white;font-weight:800;cursor:pointer">Apply rewrite</button>`
-            : `<div style="color:#22c55e;font-weight:800">No violations detected.</div>
-               <div style="color:#94a3b8;margin-top:6px;line-height:1.45">${report?.summary ?? "Draft is ready for review."}</div>`
-    }
-    <button id="complylens-rescan" style="width:100%;height:34px;margin-top:10px;border:1px solid rgba(148,163,184,.24);border-radius:8px;background:rgba(255,255,255,.04);color:#e5e7eb;font-weight:750;cursor:pointer">Rescan draft</button>
-  `;
+function appendHeader(panel: HTMLElement) {
+  const header = createElement("div");
+  setStyles(header, {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    marginBottom: "12px"
+  });
 
-  panel.querySelector("#complylens-rescan")?.addEventListener("click", () => void scanDraft());
-  panel.querySelector("#complylens-apply-rewrite")?.addEventListener("click", () => {
-    const violation = latestReport?.violations[0];
-    if (!violation) return;
-    const nextText = applyRewrite(latestText, violation);
-    if (setComposeText(nextText)) {
-      latestText = nextText;
-      latestReport = runDemoComplianceCheck(nextText);
-      renderPanel("ready", "Rewrite inserted into Gmail compose.");
-    } else {
-      renderPanel("error", "Could not find the active Gmail compose body.");
+  const title = createElement("strong", { text: "ComplyLens Gmail", styles: { fontSize: "15px" } });
+  const score = createElement("span", {
+    text: latestReport ? `${latestReport.score}%` : "Ready",
+    styles: {
+      color: latestReport?.flaggedSections ? "#f59e0b" : "#22c55e",
+      fontWeight: "800"
     }
   });
+
+  header.append(title, score);
+  panel.append(header);
+}
+
+function appendMessage(panel: HTMLElement, text: string, color = "#94a3b8") {
+  panel.append(createElement("div", { text, styles: { color, lineHeight: "1.45" } }));
+}
+
+function appendViolation(panel: HTMLElement, report: ComplianceReport) {
+  const firstViolation = report.violations[0];
+  if (!firstViolation) {
+    appendMessage(panel, "No violations detected.", "#22c55e");
+    appendMessage(panel, report.summary ?? "Draft is ready for review.");
+    return;
+  }
+
+  panel.append(
+    createElement("div", {
+      text: firstViolation.policySection,
+      styles: { color: "#f59e0b", fontWeight: "800", marginBottom: "8px" }
+    }),
+    createElement("div", {
+      text: firstViolation.explanation,
+      styles: { color: "#94a3b8", lineHeight: "1.45", marginBottom: "10px" }
+    }),
+    createElement("div", {
+      text: firstViolation.rewrite,
+      styles: {
+        padding: "10px",
+        border: "1px solid rgba(34,197,94,.22)",
+        borderRadius: "8px",
+        background: "rgba(34,197,94,.08)",
+        lineHeight: "1.45"
+      }
+    })
+  );
+
+  const applyButton = createPanelButton("Apply rewrite", "#5b8cff");
+  applyButton.addEventListener("click", () => applyFirstRewrite());
+  panel.append(applyButton);
+}
+
+function createPanelButton(label: string, background = "rgba(255,255,255,.04)") {
+  const button = createElement("button", { text: label });
+  setStyles(button, {
+    width: "100%",
+    height: "36px",
+    marginTop: "10px",
+    border: "1px solid rgba(91,140,255,.45)",
+    borderRadius: "8px",
+    background,
+    color: "#e5e7eb",
+    fontWeight: "800",
+    cursor: "pointer"
+  });
+  return button;
+}
+
+function renderPanel(state: PanelState, message = "") {
+  const panel = ensurePanel();
+  panel.replaceChildren();
+  appendHeader(panel);
+
+  if (state === "loading") {
+    appendMessage(panel, "Scanning current Gmail draft against company policy...");
+  } else if (state === "error") {
+    appendMessage(panel, message, "#fecaca");
+    if (latestReport) appendViolation(panel, latestReport);
+  } else if (latestReport) {
+    appendViolation(panel, latestReport);
+  }
+
+  const rescanButton = createPanelButton("Rescan draft");
+  rescanButton.addEventListener("click", () => void scanDraft());
+  panel.append(rescanButton);
+}
+
+function applyFirstRewrite() {
+  const violation = latestReport?.violations[0];
+  if (!violation) return;
+  const nextText = applyRewrite(latestText, violation);
+  if (setComposeText(nextText)) {
+    latestText = nextText;
+    latestReport = runDemoComplianceCheck(nextText);
+    renderPanel("ready");
+  } else {
+    renderPanel("error", "Could not find the active Gmail compose body.");
+  }
 }
 
 async function scanDraft() {
@@ -98,13 +195,7 @@ async function scanDraft() {
 
   renderPanel("loading");
   try {
-    const response = await fetch(`${API_BASE_URL}/analyze`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, documentName: "gmail-draft", threshold: 0.62 })
-    });
-    if (!response.ok) throw new Error(await response.text());
-    latestReport = (await response.json()) as ComplianceReport;
+    latestReport = await analyzeDraft(text);
     renderPanel("ready");
   } catch (error) {
     latestReport = runDemoComplianceCheck(text);
@@ -118,24 +209,22 @@ async function scanDraft() {
 function addFloatingButton() {
   if (document.getElementById(BUTTON_ID)) return;
 
-  const button = document.createElement("button");
-  button.id = BUTTON_ID;
-  button.textContent = "Check Compliance";
-  button.style.cssText = [
-    "position:fixed",
-    "right:22px",
-    "bottom:378px",
-    "z-index:2147483647",
-    "height:38px",
-    "padding:0 14px",
-    "border:1px solid rgba(91,140,255,.45)",
-    "border-radius:8px",
-    "background:linear-gradient(135deg,#5b8cff,#6d7cf8)",
-    "color:#fff",
-    "font:800 13px Geist,Inter,system-ui,sans-serif",
-    "box-shadow:0 14px 34px rgba(91,140,255,.22)",
-    "cursor:pointer"
-  ].join(";");
+  const button = createElement("button", { id: BUTTON_ID, text: "Check Compliance" });
+  setStyles(button, {
+    position: "fixed",
+    right: "22px",
+    bottom: "378px",
+    zIndex: "2147483647",
+    height: "38px",
+    padding: "0 14px",
+    border: "1px solid rgba(91,140,255,.45)",
+    borderRadius: "8px",
+    background: "linear-gradient(135deg,#5b8cff,#6d7cf8)",
+    color: "#fff",
+    font: "800 13px Geist,Inter,system-ui,sans-serif",
+    boxShadow: "0 14px 34px rgba(91,140,255,.22)",
+    cursor: "pointer"
+  });
   button.addEventListener("click", () => void scanDraft());
   document.body.appendChild(button);
 }

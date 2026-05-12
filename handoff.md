@@ -30,6 +30,12 @@
   - Split web app into `pages/`, `layouts/`, `components/common/`, `features/compliance/`, and `api/`.
   - Reduced `apps/web/src/App.tsx` to route declarations only.
   - Added `noEmit` to web and extension tsconfigs so typecheck no longer writes generated `.js`/`.d.ts` files into source folders.
+- Completed pending structural cleanup:
+  - Split `packages/shared/src/index.ts` into `types.ts`, `demoData.ts`, `config.ts`, and `compliance.ts` while preserving barrel exports.
+  - Added `outDir` for shared type emit so project references no longer write declaration files into `packages/shared/src`.
+  - Added backend `ComplianceService` and `JsonStateStore`; uploaded policy references and company settings now persist to ignored `backend/data/state.json`.
+  - Refactored extension content script away from large inline HTML templates into DOM helper functions and a small `analyzeDraft` API boundary.
+  - Split `apps/web/src/styles.css` into focused imports under `apps/web/src/styles/`.
 
 ## Done
 - Initialized handoff tracking.
@@ -105,6 +111,13 @@
   - `npm run build:extension` passes.
   - `python3 -m py_compile backend/app/*.py` passes.
   - Browser route smoke test passed for `/` and `/dashboard`.
+- Pending cleanup verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - `python3 -m py_compile backend/app/*.py` passes.
+  - Restarted backend and smoke-tested `GET /health` and `POST /analyze`.
+  - Browser route smoke test passed for `/` and `/dashboard`.
 
 ## Yet To Be Done
 - Replace or archive stale EV content in `project_context.md` when user approves.
@@ -114,9 +127,9 @@
 - Add automated tests for backend analyzer/parser and frontend workflows.
 - Validate the Chrome extension inside a real Gmail compose window after loading `dist/extension` in Chrome.
 - Consider code-splitting the web bundle because Vite reports the main chunk is larger than 500 KB.
-- Split `apps/web/src/styles.css` into route/feature/design-token CSS modules or migrate repeated patterns into Tailwind/shadcn-style components.
-- Refactor extension content script to avoid inline HTML/styles and support multiple Gmail compose windows safely.
-- Move backend from process-global in-memory state to a service/repository layer with persisted policy store.
+- Further split extension content script into separate files if the extension grows; current file is modularized internally but still one Vite entry file.
+- Add true multiple-compose Gmail support; current content script still targets the first matching compose body.
+- Replace local JSON backend persistence with a real DB/vector store when moving beyond demo deployment.
 
 ## Notes For Next Assistant
 - User wants this file updated after every chat/work session with current progress, completed work, and remaining tasks.

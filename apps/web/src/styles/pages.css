@@ -1,0 +1,16 @@
+.page-panel { min-height: calc(100vh - 158px); overflow: auto; }
+.extension-showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 22px;
+  align-items: center;
+}
+.extension-showcase h3 { margin: 0 0 10px; font-size: 1.6rem; }
+.extension-preview { padding: 18px; background: rgba(8, 13, 27, 0.78); }
+.extension-preview strong, .extension-preview small, .extension-preview p { display: block; }
+.extension-preview p { margin: 16px 0 5px; color: var(--text); }
+.extension-preview small { color: var(--muted); line-height: 1.5; }
+.risk-pill { display: inline-flex; margin-top: 12px; padding: 5px 9px; border-radius: 999px; color: #fde68a; background: rgba(245, 158, 11, 0.12); font-size: 0.76rem; font-weight: 800; }
+.extension-preview button { width: 100%; margin-top: 16px; color: #fff; background: linear-gradient(135deg, #5b8cff, #6d7cf8); }
+.settings-form { max-width: 520px; }
+
