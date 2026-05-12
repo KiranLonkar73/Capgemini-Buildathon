@@ -25,6 +25,11 @@
   - Updated Chrome extension content script to call the backend, show loading/error states, rescan Gmail compose content, and insert rewrites into the compose body.
   - Updated extension popup to call backend analysis and apply rewrites to the popup draft.
   - Committed and pushed production-spine commit `5907c75` to `origin/main`.
+- Completed structural audit and first cleanup pass:
+  - Confirmed main issues were large `App.tsx`, mixed routing/page/business logic, missing API client boundary, emitted TypeScript artifacts in `src`, oversized global CSS, and extension/backend needing deeper modularization later.
+  - Split web app into `pages/`, `layouts/`, `components/common/`, `features/compliance/`, and `api/`.
+  - Reduced `apps/web/src/App.tsx` to route declarations only.
+  - Added `noEmit` to web and extension tsconfigs so typecheck no longer writes generated `.js`/`.d.ts` files into source folders.
 
 ## Done
 - Initialized handoff tracking.
@@ -94,6 +99,12 @@
     - `GET /health`
     - `POST /analyze`
   - Browser verification completed for desktop landing/dashboard and mobile landing with no app console errors.
+- Structural cleanup verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - `python3 -m py_compile backend/app/*.py` passes.
+  - Browser route smoke test passed for `/` and `/dashboard`.
 
 ## Yet To Be Done
 - Replace or archive stale EV content in `project_context.md` when user approves.
@@ -103,6 +114,9 @@
 - Add automated tests for backend analyzer/parser and frontend workflows.
 - Validate the Chrome extension inside a real Gmail compose window after loading `dist/extension` in Chrome.
 - Consider code-splitting the web bundle because Vite reports the main chunk is larger than 500 KB.
+- Split `apps/web/src/styles.css` into route/feature/design-token CSS modules or migrate repeated patterns into Tailwind/shadcn-style components.
+- Refactor extension content script to avoid inline HTML/styles and support multiple Gmail compose windows safely.
+- Move backend from process-global in-memory state to a service/repository layer with persisted policy store.
 
 ## Notes For Next Assistant
 - User wants this file updated after every chat/work session with current progress, completed work, and remaining tasks.
