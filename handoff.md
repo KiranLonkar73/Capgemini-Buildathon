@@ -42,6 +42,14 @@
   - Upgraded policies, extension, and settings pages with richer page hero sections, metrics, side panels, and operational context.
   - Replaced dark palette with refined light enterprise palette using `#F5F7FB`, glass surfaces, indigo accents, soft depth, and clearer typography.
   - Updated extension popup and Gmail content script visual language to match the web app.
+- Completed focused landing-page polish after user feedback:
+  - Fixed ComplyLens logo alignment and removed the `Policy Compliance Checker` logo subtitle.
+  - Reworked the top nav into a cleaner product tab bar with `Features`, `Extension`, `Demo`, plus separate `Login` and `Sign up` actions.
+  - Simplified the homepage from a dense investor/dashboard-style page into viewport-sized animated sections.
+  - Added cursor-follow spotlight behavior to the hero.
+  - Added restrained 3D-style depth, floating panels, scan motion, and section reveal animations.
+  - Tightened desktop and mobile section sizing so the homepage feels clearer and less clustered.
+  - Verified desktop and mobile homepage rendering in Playwright.
 
 ## Done
 - Initialized handoff tracking.
@@ -130,6 +138,12 @@
   - `npm run build:extension` passes.
   - `python3 -m py_compile backend/app/*.py` passes.
   - Browser smoke-tested `/`, `/dashboard`, `/policies`, `/extension`, `/settings`, and mobile homepage.
+- Landing polish verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - Browser verified `http://localhost:5173/` at `1440x900` and `390x844`.
+  - Dev console only showed the standard React DevTools development info message.
 
 ## Yet To Be Done
 - Replace or archive stale EV content in `project_context.md` when user approves.
@@ -142,6 +156,7 @@
 - Further split extension content script into separate files if the extension grows; current file is modularized internally but still one Vite entry file.
 - Add true multiple-compose Gmail support; current content script still targets the first matching compose body.
 - Replace local JSON backend persistence with a real DB/vector store when moving beyond demo deployment.
+- Continue dashboard-specific redesign next; user explicitly said the dashboard will be handled after this frontend landing pass.
 
 ## Notes For Next Assistant
 - User wants this file updated after every chat/work session with current progress, completed work, and remaining tasks.
@@ -157,3 +172,5 @@
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-final.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-mobile.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-extension-popup.png`
+  - `/Users/lol/Docs/antigravity/capgmeini/complylens-home-desktop-finalcheck.png`
+  - `/Users/lol/Docs/antigravity/capgmeini/complylens-home-mobile-after.png`

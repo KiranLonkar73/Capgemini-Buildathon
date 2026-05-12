@@ -52,7 +52,7 @@ a { color: inherit; }
 .site-nav,
 .workspace-nav {
   display: grid;
-  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(180px, 260px) minmax(0, 1fr) auto;
   align-items: center;
   gap: 22px;
   min-height: 74px;
@@ -96,7 +96,14 @@ a { color: inherit; }
 .site-nav nav,
 .workspace-nav nav {
   justify-content: center;
-  gap: 6px;
+  gap: 3px;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
 }
 
 .site-nav nav a,
@@ -126,6 +133,11 @@ a { color: inherit; }
 
 .brand { gap: 12px; }
 .brand-link { text-decoration: none; }
+.site-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .brand-icon,
 .auth-icon,
 .premium-icon {
@@ -141,9 +153,12 @@ a { color: inherit; }
 }
 .brand-icon { width: 42px; height: 42px; }
 .premium-icon { width: 44px; height: 44px; }
-.brand strong, .brand span { display: block; }
-.brand strong { font-size: 1rem; line-height: 1.05; letter-spacing: -0.01em; }
-.brand span { margin-top: 4px; color: var(--muted); font-size: 0.76rem; }
+.brand > strong {
+  display: block;
+  font-size: 1.08rem;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
 
 .primary-action,
 .auth-submit,
@@ -171,6 +186,11 @@ a { color: inherit; }
   border-color: var(--line-strong);
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+.nav-signup {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.86rem;
 }
 
 .eyebrow {

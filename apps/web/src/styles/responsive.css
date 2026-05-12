@@ -1,6 +1,7 @@
 @media (max-width: 1180px) {
   .hero-section,
   .extension-demo-section,
+  .feature-rail,
   .trust-section {
     grid-template-columns: 1fr;
   }
@@ -24,7 +25,10 @@
   }
   .document-content { grid-template-columns: 1fr; overflow: auto; }
   .findings-sidebar { grid-template-columns: 1fr; }
-  .workflow-map { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workflow-map,
+  .feature-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 680px) {
@@ -35,11 +39,46 @@
     padding: 14px;
     position: static;
   }
+  .site-nav-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .site-nav-actions > * {
+    flex: 1;
+  }
   .workspace-actions { width: 100%; }
   .workspace-actions > * { flex: 1; }
-  .hero-section { min-height: auto; padding: 44px 16px; }
-  .hero-content h1, .auth-copy h1 { font-size: 2.55rem; }
-  .hero-metrics, .workflow-map, .extension-signal-grid, .intelligence-grid { grid-template-columns: 1fr; }
+  .hero-section,
+  .home-section {
+    min-height: calc(100svh - 118px);
+    width: calc(100% - 24px);
+    padding: 34px 0;
+  }
+  .hero-content h1, .auth-copy h1 { font-size: 2.36rem; }
+  .hero-content p {
+    margin-top: 18px;
+    font-size: 0.98rem;
+    line-height: 1.72;
+  }
+  .hero-actions {
+    margin-top: 24px;
+  }
+  .hero-metrics, .workflow-map, .feature-rail, .extension-signal-grid, .intelligence-grid { grid-template-columns: 1fr; }
+  .section-heading {
+    margin-bottom: 18px;
+  }
+  .section-heading h2,
+  .extension-demo-section h2,
+  .final-cta-section h2 {
+    font-size: 2.1rem;
+    line-height: 1;
+  }
+  .section-heading p,
+  .extension-demo-section p,
+  .final-cta-section p {
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
   .workflow-showcase,
   .section-grid,
   .intelligence-showcase,
@@ -51,10 +90,52 @@
   .auth-layout {
     width: calc(100% - 24px);
   }
-  .hero-visual { min-height: 460px; }
-  .analysis-panel.elevated { inset: 20px 0 auto 0; }
-  .analysis-panel.policy-card { right: 0; bottom: 120px; width: 250px; }
-  .analysis-panel.rewrite-card { left: 0; bottom: 20px; width: 282px; }
+  .hero-visual {
+    min-height: 250px;
+    margin-top: 22px;
+  }
+  .analysis-panel {
+    padding: 14px;
+  }
+  .analysis-panel h2 {
+    font-size: 1.25rem;
+  }
+  .document-lines {
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .document-lines span {
+    height: 10px;
+  }
+  .risk-chip {
+    margin-top: 16px;
+  }
+  .workflow-node,
+  .feature-card {
+    min-height: 0;
+    padding: 16px;
+  }
+  .workflow-node strong,
+  .feature-card h3 {
+    margin-top: 12px;
+  }
+  .analysis-panel.elevated {
+    inset: 0 0 auto 0;
+    min-height: 180px;
+  }
+  .analysis-panel.policy-card {
+    right: 0;
+    top: 156px;
+    width: 238px;
+  }
+  .analysis-panel.policy-card p {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+  .analysis-panel.rewrite-card { display: none; }
+  .scan-beam {
+    top: 34px;
+  }
   .cta-footer,
   .dashboard-command,
   .document-toolbar,
