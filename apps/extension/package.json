@@ -1,0 +1,12 @@
+{
+  "name": "@complylens/extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@complylens/shared": "0.1.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "ComplyLens Gmail Checker",
+  "description": "Checks Gmail drafts against company policy before sending.",
+  "version": "0.1.0",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ComplyLens"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://mail.google.com/*"]
+}
