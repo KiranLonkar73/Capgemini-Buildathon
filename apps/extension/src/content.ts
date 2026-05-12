@@ -65,11 +65,12 @@ function ensurePanel() {
     width: "340px",
     padding: "14px",
     border: "1px solid rgba(148,163,184,.22)",
-    borderRadius: "8px",
-    background: "#121a2f",
-    color: "#e5e7eb",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,.92)",
+    color: "#0f172a",
     font: "14px Geist,Inter,system-ui,sans-serif",
-    boxShadow: "0 20px 60px rgba(0,0,0,.32)"
+    boxShadow: "0 20px 60px rgba(15,23,42,.16)",
+    backdropFilter: "blur(18px)"
   });
   document.body.appendChild(panel);
   return panel;
@@ -89,7 +90,7 @@ function appendHeader(panel: HTMLElement) {
   const score = createElement("span", {
     text: latestReport ? `${latestReport.score}%` : "Ready",
     styles: {
-      color: latestReport?.flaggedSections ? "#f59e0b" : "#22c55e",
+      color: latestReport?.flaggedSections ? "#f59e0b" : "#10b981",
       fontWeight: "800"
     }
   });
@@ -98,14 +99,14 @@ function appendHeader(panel: HTMLElement) {
   panel.append(header);
 }
 
-function appendMessage(panel: HTMLElement, text: string, color = "#94a3b8") {
+function appendMessage(panel: HTMLElement, text: string, color = "#64748b") {
   panel.append(createElement("div", { text, styles: { color, lineHeight: "1.45" } }));
 }
 
 function appendViolation(panel: HTMLElement, report: ComplianceReport) {
   const firstViolation = report.violations[0];
   if (!firstViolation) {
-    appendMessage(panel, "No violations detected.", "#22c55e");
+    appendMessage(panel, "No violations detected.", "#10b981");
     appendMessage(panel, report.summary ?? "Draft is ready for review.");
     return;
   }
@@ -113,39 +114,39 @@ function appendViolation(panel: HTMLElement, report: ComplianceReport) {
   panel.append(
     createElement("div", {
       text: firstViolation.policySection,
-      styles: { color: "#f59e0b", fontWeight: "800", marginBottom: "8px" }
+      styles: { color: "#92400e", fontWeight: "800", marginBottom: "8px" }
     }),
     createElement("div", {
       text: firstViolation.explanation,
-      styles: { color: "#94a3b8", lineHeight: "1.45", marginBottom: "10px" }
+      styles: { color: "#64748b", lineHeight: "1.45", marginBottom: "10px" }
     }),
     createElement("div", {
       text: firstViolation.rewrite,
       styles: {
         padding: "10px",
-        border: "1px solid rgba(34,197,94,.22)",
-        borderRadius: "8px",
-        background: "rgba(34,197,94,.08)",
+        border: "1px solid rgba(16,185,129,.22)",
+        borderRadius: "14px",
+        background: "rgba(236,253,245,.86)",
         lineHeight: "1.45"
       }
     })
   );
 
-  const applyButton = createPanelButton("Apply rewrite", "#5b8cff");
+  const applyButton = createPanelButton("Apply rewrite", "#4f46e5");
   applyButton.addEventListener("click", () => applyFirstRewrite());
   panel.append(applyButton);
 }
 
-function createPanelButton(label: string, background = "rgba(255,255,255,.04)") {
+function createPanelButton(label: string, background = "rgba(248,250,252,.86)") {
   const button = createElement("button", { text: label });
   setStyles(button, {
     width: "100%",
     height: "36px",
     marginTop: "10px",
-    border: "1px solid rgba(91,140,255,.45)",
-    borderRadius: "8px",
+    border: "1px solid rgba(148,163,184,.22)",
+    borderRadius: "999px",
     background,
-    color: "#e5e7eb",
+    color: background === "#4f46e5" ? "#fff" : "#0f172a",
     fontWeight: "800",
     cursor: "pointer"
   });
@@ -160,7 +161,7 @@ function renderPanel(state: PanelState, message = "") {
   if (state === "loading") {
     appendMessage(panel, "Scanning current Gmail draft against company policy...");
   } else if (state === "error") {
-    appendMessage(panel, message, "#fecaca");
+    appendMessage(panel, message, "#991b1b");
     if (latestReport) appendViolation(panel, latestReport);
   } else if (latestReport) {
     appendViolation(panel, latestReport);
@@ -217,12 +218,12 @@ function addFloatingButton() {
     zIndex: "2147483647",
     height: "38px",
     padding: "0 14px",
-    border: "1px solid rgba(91,140,255,.45)",
-    borderRadius: "8px",
-    background: "linear-gradient(135deg,#5b8cff,#6d7cf8)",
+    border: "1px solid rgba(79,70,229,.28)",
+    borderRadius: "999px",
+    background: "linear-gradient(135deg,#4f46e5,#6d5dfc)",
     color: "#fff",
     font: "800 13px Geist,Inter,system-ui,sans-serif",
-    boxShadow: "0 14px 34px rgba(91,140,255,.22)",
+    boxShadow: "0 14px 34px rgba(79,70,229,.22)",
     cursor: "pointer"
   });
   button.addEventListener("click", () => void scanDraft());

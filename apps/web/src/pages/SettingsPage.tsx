@@ -1,9 +1,17 @@
 import { FormEvent, useState } from "react";
+import { Bell, Building2, Gauge, KeyRound, ShieldCheck } from "lucide-react";
 import { saveCompanySettings } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
+
+const settingsControls = [
+  { title: "SSO readiness", copy: "SAML and SCIM hooks prepared for enterprise identity.", icon: Building2 },
+  { title: "API access", copy: "Backend endpoints ready for web and extension clients.", icon: KeyRound },
+  { title: "Review alerts", copy: "High-risk findings route to compliance owners.", icon: Bell },
+  { title: "Human governance", copy: "Dismiss and mark-safe actions remain auditable.", icon: ShieldCheck }
+];
 
 export function SettingsPage() {
   const [notice, setNotice] = useState<Notice>(null);
@@ -34,25 +42,46 @@ export function SettingsPage() {
   return (
     <WorkspaceShell>
       <section className="page-panel settings-page">
-        <PanelTitle label="Controls" title="Company profile and thresholds" />
+        <div className="page-hero">
+          <div>
+            <span className="eyebrow">Workspace controls</span>
+            <h1>Govern how AI applies company policy.</h1>
+            <p>Configure organization identity, confidence thresholds, active policy memory, and review behavior.</p>
+          </div>
+          <div className="page-hero-metric"><Gauge size={18} /><strong>0.62</strong><span>default threshold</span></div>
+        </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
-        <form className="settings-form" onSubmit={save}>
-          <label>
-            Organization name
-            <input defaultValue="Demo Enterprise" name="organizationName" />
-          </label>
-          <label>
-            Active policy set
-            <input defaultValue="seeded-enterprise-policy" name="activePolicySet" />
-          </label>
-          <label>
-            Confidence threshold
-            <input defaultValue="0.62" max="0.95" min="0.2" name="threshold" step="0.01" type="number" />
-          </label>
-          <button className="primary-action" disabled={saving} type="submit">
-            {saving ? "Saving..." : "Save settings"}
-          </button>
-        </form>
+        <div className="settings-grid">
+          <form className="settings-form" onSubmit={save}>
+            <PanelTitle label="Organization" title="Company profile" />
+            <label>
+              Organization name
+              <input defaultValue="Demo Enterprise" name="organizationName" />
+            </label>
+            <label>
+              Active policy set
+              <input defaultValue="seeded-enterprise-policy" name="activePolicySet" />
+            </label>
+            <label>
+              Confidence threshold
+              <input defaultValue="0.62" max="0.95" min="0.2" name="threshold" step="0.01" type="number" />
+            </label>
+            <button className="primary-action" disabled={saving} type="submit">
+              {saving ? "Saving..." : "Save settings"}
+            </button>
+          </form>
+          <aside className="settings-side">
+            {settingsControls.map(({ title, copy, icon: Icon }) => (
+              <article key={title}>
+                <Icon size={18} />
+                <div>
+                  <strong>{title}</strong>
+                  <span>{copy}</span>
+                </div>
+              </article>
+            ))}
+          </aside>
+        </div>
       </section>
     </WorkspaceShell>
   );

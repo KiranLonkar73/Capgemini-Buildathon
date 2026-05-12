@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { FileText, Upload } from "lucide-react";
+import { Activity, AlertTriangle, Bot, CheckCircle2, FileText, ShieldCheck, Upload } from "lucide-react";
 import {
   applyRewrite,
   demoDocument,
@@ -14,6 +14,16 @@ import { PanelTitle } from "../components/common/PanelTitle";
 import { FindingsPanel } from "../features/compliance/FindingsPanel";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
+import {
+  activityFeed,
+  aiInsights,
+  dashboardMetrics,
+  policySystems,
+  riskHeatmap,
+  securityEvents,
+  teamAnalytics,
+  trendPoints
+} from "../data/productData";
 import type { Notice } from "../types";
 
 export function DashboardPage() {
@@ -100,76 +110,184 @@ export function DashboardPage() {
 
   return (
     <WorkspaceShell>
-      <section className="workspace-layout">
-        <aside className="policy-sidebar">
-          <PanelTitle label="Policy library" title="Active rulebase" />
-          <a className="upload-card" href="/policies">
-            <Upload size={18} />
-            <span>
-              <strong>Manage policies</strong>
-              <small>Upload company PDF, DOCX, TXT policy docs</small>
-            </span>
-          </a>
-          <div className="policy-list">
-            {samplePolicies.map((policy) => (
-              <article className="policy-row" key={policy.id}>
-                <span>{policy.owner}</span>
-                <div>
-                  <strong>{policy.policy}</strong>
-                  <small>{policy.section}</small>
-                </div>
-              </article>
-            ))}
+      <section className="ops-dashboard">
+        <div className="dashboard-command">
+          <div>
+            <span className="eyebrow">Compliance operations command center</span>
+            <h1>Live policy intelligence across enterprise communication.</h1>
+            <p>Monitor active scans, policy systems, rewrite activity, and high-confidence risk signals in one operating surface.</p>
           </div>
-        </aside>
+          <div className="command-status">
+            <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
+            {loading ? "AI scan running" : report.source === "backend" ? "Backend connected" : "Seeded demo mode"}
+          </div>
+        </div>
 
-        <section className="review-canvas">
-          <div className="review-header">
-            <PanelTitle label="Document review" title="Outbound vendor email" />
-            <div className="scan-state">
-              <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
-              {loading ? "Scanning policies" : report.source === "backend" ? "Backend connected" : "Seeded demo mode"}
-            </div>
-          </div>
-          {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
-          <div className="document-card">
-            <div className="document-toolbar">
-              <span>
-                <FileText size={15} />
-                {documentName}
-              </span>
-              <div>
-                <button onClick={pasteText} type="button">
-                  Paste demo
-                </button>
-                <button onClick={() => fileRef.current?.click()} type="button">
-                  Upload file
-                </button>
-                <button disabled={loading} onClick={() => void analyze()} type="button">
-                  {loading ? "Running..." : "Run analysis"}
-                </button>
+        <div className="metric-grid">
+          {dashboardMetrics.map((metric) => (
+            <article className={`metric-card tone-${metric.tone}`} key={metric.label}>
+              <span>{metric.label}</span>
+              <strong>{metric.value}<small>{metric.suffix}</small></strong>
+              <em>{metric.delta}</em>
+            </article>
+          ))}
+        </div>
+
+        <div className="ops-grid">
+          <section className="analysis-workbench">
+            <div className="review-header">
+              <PanelTitle label="Document review" title="Outbound vendor email" />
+              <div className="scan-state">
+                <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
+                {loading ? "Scanning policies" : `${report.flaggedSections} findings`}
               </div>
-              <input accept=".txt,.pdf,.docx" hidden onChange={uploadDocument} ref={fileRef} type="file" />
             </div>
-            <HighlightedEditor draft={draft} onChange={setDraft} onSelectViolation={setActiveId} violations={visibleViolations} />
-          </div>
-        </section>
+            {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
+            <div className="document-card">
+              <div className="document-toolbar">
+                <span>
+                  <FileText size={15} />
+                  {documentName}
+                </span>
+                <div>
+                  <button onClick={pasteText} type="button">Paste demo</button>
+                  <button onClick={() => fileRef.current?.click()} type="button">Upload file</button>
+                  <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Running..." : "Run analysis"}</button>
+                </div>
+                <input accept=".txt,.pdf,.docx" hidden onChange={uploadDocument} ref={fileRef} type="file" />
+              </div>
+              <HighlightedEditor draft={draft} onChange={setDraft} onSelectViolation={setActiveId} violations={visibleViolations} />
+            </div>
+          </section>
 
-        <FindingsPanel
-          activeViolation={activeViolation}
-          hiddenCount={hiddenIds.length}
-          loading={loading}
-          onApply={applyViolationRewrite}
-          onDismiss={(id) => setHiddenIds((ids) => [...new Set([...ids, id])])}
-          onFilter={setSeverityFilter}
-          onMarkSafe={(id) => setHiddenIds((ids) => [...new Set([...ids, id])])}
-          onSelectViolation={setActiveId}
-          onThreshold={setThreshold}
-          report={report}
-          severityFilter={severityFilter}
-          threshold={threshold}
-          violations={visibleViolations}
-        />
+          <FindingsPanel
+            activeViolation={activeViolation}
+            hiddenCount={hiddenIds.length}
+            loading={loading}
+            onApply={applyViolationRewrite}
+            onDismiss={(id) => setHiddenIds((ids) => [...new Set([...ids, id])])}
+            onFilter={setSeverityFilter}
+            onMarkSafe={(id) => setHiddenIds((ids) => [...new Set([...ids, id])])}
+            onSelectViolation={setActiveId}
+            onThreshold={setThreshold}
+            report={report}
+            severityFilter={severityFilter}
+            threshold={threshold}
+            violations={visibleViolations}
+          />
+        </div>
+
+        <div className="intelligence-grid">
+          <section className="ops-card">
+            <PanelTitle label="Live risk monitoring" title="Risk heatmap" />
+            <div className="heatmap-list">
+              {riskHeatmap.map(([label, value, tone]) => (
+                <div className={`heatmap-row tone-${tone}`} key={label}>
+                  <span>{label}</span>
+                  <div><i style={{ width: `${value}%` }} /></div>
+                  <strong>{value}%</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="Compliance trends" title="Risk reduction over time" />
+            <div className="trend-chart">
+              {trendPoints.map((point, index) => <i key={`${point}-${index}`} style={{ height: `${point}%` }} />)}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="AI insights feed" title="Priority observations" />
+            <div className="insight-list">
+              {aiInsights.map((insight) => (
+                <div key={insight}><Bot size={16} />{insight}</div>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="Security events" title="Recent interventions" />
+            <div className="security-list">
+              {securityEvents.map((event) => (
+                <div key={event}><AlertTriangle size={15} />{event}</div>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card wide">
+            <PanelTitle label="Enterprise communication activity" title="Audit and workflow history" />
+            <div className="activity-feed">
+              {activityFeed.map((activity) => (
+                <article className={`activity-item tone-${activity.tone}`} key={activity.title}>
+                  <Activity size={16} />
+                  <div>
+                    <strong>{activity.title}</strong>
+                    <span>{activity.detail}</span>
+                  </div>
+                  <time>{activity.time}</time>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="Team analytics" title="Risk by team" />
+            <div className="team-table">
+              {teamAnalytics.map((team) => (
+                <div key={team.team}>
+                  <span>{team.team}</span>
+                  <strong>{team.score}%</strong>
+                  <small>{team.scanned} scans · {team.risks} risks</small>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="Active policy systems" title="Coverage and passages" />
+            <div className="policy-system-list">
+              {policySystems.map((policy) => (
+                <div key={policy.name}>
+                  <ShieldCheck size={16} />
+                  <span>{policy.name}</span>
+                  <strong>{policy.coverage}%</strong>
+                  <small>{policy.passages} passages · {policy.owner}</small>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="Policy intelligence center" title="Active rulebase" />
+            <a className="upload-card" href="/policies">
+              <Upload size={18} />
+              <span>
+                <strong>Manage policies</strong>
+                <small>Upload company PDF, DOCX, TXT policy docs</small>
+              </span>
+            </a>
+            <div className="policy-list compact">
+              {samplePolicies.map((policy) => (
+                <article className="policy-row" key={policy.id}>
+                  <span>{policy.owner}</span>
+                  <div>
+                    <strong>{policy.policy}</strong>
+                    <small>{policy.section}</small>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="ops-card rewrite-queue">
+            <PanelTitle label="Rewrite suggestions" title="AI-safe alternatives" />
+            <div><CheckCircle2 size={16} /> Legal-safe delivery target language ready</div>
+            <div><CheckCircle2 size={16} /> Secure transfer wording applied to vendor draft</div>
+            <div><CheckCircle2 size={16} /> Compensation disclosure removed from internal note</div>
+          </section>
+        </div>
       </section>
     </WorkspaceShell>
   );

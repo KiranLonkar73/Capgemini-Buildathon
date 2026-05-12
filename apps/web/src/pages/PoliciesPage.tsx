@@ -1,11 +1,12 @@
 import { ChangeEvent, useState } from "react";
-import { Upload } from "lucide-react";
+import { Database, FileSearch, ShieldCheck, Upload } from "lucide-react";
 import { samplePolicies } from "@complylens/shared";
 import { uploadPolicyDocument } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
+import { policySystems } from "../data/productData";
 
 export function PoliciesPage() {
   const [notice, setNotice] = useState<Notice>(null);
@@ -43,27 +44,56 @@ export function PoliciesPage() {
   return (
     <WorkspaceShell>
       <section className="page-panel">
-        <PanelTitle label="Company policy memory" title="Upload and manage active policy sets" />
+        <div className="page-hero">
+          <div>
+            <span className="eyebrow">Policy intelligence center</span>
+            <h1>Company policy memory built for explainable AI review.</h1>
+            <p>Upload source policies, inspect coverage, and manage the rule systems used across Gmail and document workflows.</p>
+          </div>
+          <div className="page-hero-metric"><Database size={18} /><strong>829</strong><span>indexed passages</span></div>
+        </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
-        <label className="large-upload">
-          <Upload size={22} />
-          <span>
-            <strong>{uploading ? "Uploading policy..." : "Upload policy document"}</strong>
-            <small>PDF, DOCX, and TXT are parsed by the FastAPI backend.</small>
-          </span>
-          <input accept=".pdf,.docx,.txt" disabled={uploading} onChange={uploadPolicy} type="file" />
-        </label>
-        <div className="policy-table">
-          {policyRows.map((policy) => (
-            <article className="policy-row wide" key={policy.id}>
-              <span>{policy.owner}</span>
-              <div>
-                <strong>{policy.policy}</strong>
-                <small>{policy.section}</small>
-                <p>{policy.rule}</p>
-              </div>
-            </article>
-          ))}
+        <div className="policy-console">
+          <div>
+            <label className="large-upload">
+              <Upload size={22} />
+              <span>
+                <strong>{uploading ? "Uploading policy..." : "Upload policy document"}</strong>
+                <small>PDF, DOCX, and TXT are parsed by the FastAPI backend.</small>
+              </span>
+              <input accept=".pdf,.docx,.txt" disabled={uploading} onChange={uploadPolicy} type="file" />
+            </label>
+            <div className="policy-table">
+              {policyRows.map((policy) => (
+                <article className="policy-row wide" key={policy.id}>
+                  <span>{policy.owner}</span>
+                  <div>
+                    <strong>{policy.policy}</strong>
+                    <small>{policy.section}</small>
+                    <p>{policy.rule}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+          <aside className="ops-card">
+            <PanelTitle label="Coverage" title="Active systems" />
+            <div className="policy-system-list">
+              {policySystems.map((policy) => (
+                <div key={policy.name}>
+                  <ShieldCheck size={16} />
+                  <span>{policy.name}</span>
+                  <strong>{policy.coverage}%</strong>
+                  <small>{policy.passages} passages · {policy.owner}</small>
+                </div>
+              ))}
+            </div>
+            <div className="policy-health">
+              <FileSearch size={18} />
+              <strong>Retrieval health: high</strong>
+              <span>Policy chunks are returning cited context for 94% of flagged messages.</span>
+            </div>
+          </aside>
         </div>
       </section>
     </WorkspaceShell>
