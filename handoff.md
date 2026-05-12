@@ -12,6 +12,10 @@
 - User requested Animate UI, Forge UI, and Vengeance UI setup plus GitHub repo creation.
 - Tailwind v4, shadcn-compatible registry config, Animate UI registry component, and Vengeance UI registry component are installed.
 - GitHub repo created and pushed: `https://github.com/LakshyaKGupta/complylens-policy-checker` (private).
+- Fixed white-page issue on localhost:
+  - Cause was stale Vite optimized dependency cache after installing UI libraries.
+  - Restarted dev server with `--force`.
+  - Updated `dev:web` script to always run Vite with `--force`.
 
 ## Done
 - Initialized handoff tracking.
