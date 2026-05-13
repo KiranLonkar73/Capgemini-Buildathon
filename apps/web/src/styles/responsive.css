@@ -10,6 +10,8 @@
   .dashboard-command,
   .dashboard-focus-strip,
   .work-grid,
+  .employee-workspace-grid,
+  .result-workspace,
   .workflow-grid,
   .profile-grid {
     grid-template-columns: 1fr;
@@ -27,10 +29,13 @@
   .analytics-grid,
   .metric-grid,
   .auth-layout,
+  .auth-role-grid,
   .extension-showcase,
   .extension-install-steps,
   .thread-summary-grid,
   .policy-health-grid,
+  .settings-grid--wide,
+  .admin-report-grid,
   .integration-grid {
     grid-template-columns: 1fr;
   }
@@ -41,6 +46,12 @@
     flex-direction: column;
   }
   .document-content { overflow: auto; }
+  .employee-history-panel {
+    max-height: none;
+  }
+  .result-workspace {
+    min-height: 0;
+  }
   .findings-sidebar { grid-template-columns: 1fr; }
   .ops-card.wide { grid-column: span 1; }
   .workflow-map,

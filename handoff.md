@@ -218,6 +218,20 @@
   - `npm run typecheck` passes.
   - `npm run build:web` passes.
   - Browser checked `/dashboard` desktop.
+- Completed employee/admin workspace simplification pass:
+  - Removed visible `Inbox`, `Integrations`, and `Reports` navigation.
+  - Combined `Settings` and `Profile` into one role-aware page.
+  - Added frontend role selection for `Admin` vs `Employee` during login/signup and stored the demo role in `localStorage`.
+  - Employee sidebar now shows `Workspace`, `History`, and `Settings`.
+  - Admin sidebar now shows `Workspace`, `Policies`, `Audit Trail`, and `Admin`.
+  - Rebuilt `Compliance Workspace` around a large centered upload/drop box, typed text entry, and a clear `Run Analysis` button.
+  - After analysis, the result view now takes over the main screen with highlighted original text and violation/rewrite cards; upload-next remains available.
+  - Removed the old compliance sessions rail and right intelligence rail from the workspace.
+  - Added employee session history beside the workspace and a dedicated employee history view.
+  - Policy upload is now admin-only; employees hitting `/policies` see an admin-required message.
+  - Added simple admin reports, employee assignment, extension setup, and API notes into the combined admin/settings page.
+  - Started the frontend at `http://127.0.0.1:5173/` and backend at `http://127.0.0.1:8000/`.
+  - Verification passed: `npm run typecheck`, `npm run build:web`, browser checked employee workspace analysis at `1366x768` and admin/employee policy access behavior.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:

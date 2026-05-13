@@ -9,6 +9,7 @@ import type { Notice } from "../types";
 import { policySystems } from "../data/productData";
 
 export function PoliciesPage() {
+  const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [notice, setNotice] = useState<Notice>(null);
   const [uploading, setUploading] = useState(false);
   const [policyRows, setPolicyRows] = useState(samplePolicies);
@@ -42,8 +43,16 @@ export function PoliciesPage() {
   }
 
   return (
-    <WorkspaceShell>
+    <WorkspaceShell role={role}>
       <section className="page-panel simple-dashboard">
+        {role !== "admin" ? (
+          <div className="restricted-panel">
+            <ShieldCheck size={28} />
+            <h1>Admin access required</h1>
+            <p>Policy uploads are only available to compliance admins. Employee accounts can run checks and review their own history.</p>
+          </div>
+        ) : (
+          <>
         <div className="workspace-command-bar">
           <div>
             <h1>Policy Infrastructure</h1>
@@ -102,6 +111,8 @@ export function PoliciesPage() {
             </div>
           </aside>
         </div>
+          </>
+        )}
       </section>
     </WorkspaceShell>
   );

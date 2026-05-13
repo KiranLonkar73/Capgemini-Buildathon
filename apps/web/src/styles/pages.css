@@ -179,3 +179,112 @@
 .settings-side svg { color: var(--accent); margin-top: 2px; }
 .settings-side strong, .settings-side span { display: block; }
 .settings-side span { margin-top: 4px; color: var(--muted); line-height: 1.45; }
+
+.settings-grid--wide {
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+}
+
+.admin-control-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.employee-invite-row,
+.integration-setup-card {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(248,250,252,.78);
+}
+
+.integration-setup-card {
+  grid-template-columns: 22px minmax(0, 1fr);
+  margin-top: 10px;
+}
+
+.employee-invite-row svg,
+.integration-setup-card svg {
+  color: var(--accent);
+}
+
+.employee-invite-row strong,
+.employee-invite-row span,
+.integration-setup-card strong,
+.integration-setup-card span {
+  display: block;
+}
+
+.employee-invite-row span,
+.integration-setup-card span {
+  margin-top: 3px;
+  color: var(--muted);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.employee-invite-row button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(79,70,229,.22);
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(238,242,255,.82);
+  font-weight: 800;
+}
+
+.admin-report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-report-grid div {
+  display: grid;
+  gap: 4px;
+  min-height: 112px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(248,250,252,.78);
+}
+
+.admin-report-grid svg {
+  color: var(--accent);
+}
+
+.admin-report-grid span,
+.admin-report-grid small {
+  color: var(--muted);
+}
+
+.admin-report-grid strong {
+  font-size: 1.55rem;
+  letter-spacing: -0.04em;
+}
+
+.restricted-panel {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 96px);
+  padding: 28px;
+  text-align: center;
+}
+
+.restricted-panel svg {
+  color: var(--accent);
+}
+
+.restricted-panel h1 {
+  margin: 12px 0 6px;
+  letter-spacing: -0.04em;
+}
+
+.restricted-panel p {
+  max-width: 520px;
+  margin: 0;
+  color: var(--secondary);
+  line-height: 1.6;
+}

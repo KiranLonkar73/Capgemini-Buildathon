@@ -1,19 +1,37 @@
-import { Activity, BarChart3, Building2, Cable, FileText, Inbox, Settings, Shield, UserCircle } from "lucide-react";
+import { Activity, Building2, FileText, Settings, Shield } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { Brand } from "../components/common/Brand";
 
-const workspaceLinks = [
-  { to: "/dashboard", label: "Workspace", icon: FileText },
-  { to: "/inbox", label: "Inbox", icon: Inbox },
-  { to: "/policies", label: "Policies", icon: Shield },
-  { to: "/integrations", label: "Integrations", icon: Cable },
-  { to: "/analytics", label: "Reports", icon: BarChart3 },
-  { to: "/audit", label: "Audit Trail", icon: Activity },
-  { to: "/settings", label: "Settings", icon: Settings },
-  { to: "/profile", label: "Profile", icon: UserCircle }
-];
+type WorkspaceRole = "admin" | "employee";
 
-export function WorkspaceShell({ children }: { children: React.ReactNode }) {
+function getStoredRole(): WorkspaceRole {
+  if (typeof window === "undefined") {
+    return "employee";
+  }
+
+  return window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
+}
+
+function getWorkspaceLinks(role: WorkspaceRole) {
+  if (role === "admin") {
+    return [
+      { to: "/dashboard", label: "Workspace", icon: FileText },
+      { to: "/policies", label: "Policies", icon: Shield },
+      { to: "/audit", label: "Audit Trail", icon: Activity },
+      { to: "/settings", label: "Admin", icon: Settings }
+    ];
+  }
+
+  return [
+    { to: "/dashboard", label: "Workspace", icon: FileText },
+    { to: "/audit", label: "History", icon: Activity },
+    { to: "/settings", label: "Settings", icon: Settings }
+  ];
+}
+
+export function WorkspaceShell({ children, role = getStoredRole() }: { children: React.ReactNode; role?: WorkspaceRole }) {
+  const workspaceLinks = getWorkspaceLinks(role);
+
   return (
     <main className="workspace-shell">
       <aside className="workspace-sidebar">
@@ -32,7 +50,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           <Building2 size={16} />
           <div>
             <strong>Demo Enterprise</strong>
-            <span>Seeded policy model</span>
+            <span>{role === "admin" ? "Admin workspace" : "Employee workspace"}</span>
           </div>
         </div>
       </aside>
