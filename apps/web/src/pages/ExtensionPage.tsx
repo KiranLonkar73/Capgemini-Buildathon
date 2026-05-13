@@ -1,4 +1,4 @@
-import { CheckCircle2, MailCheck, MessageSquareText, Search, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
+import { Braces, CheckCircle2, KeyRound, MailCheck, MessageSquareText, Search, ShieldCheck, Sparkles, Webhook, Wand2 } from "lucide-react";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { extensionSignals } from "../data/productData";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
@@ -7,13 +7,15 @@ export function ExtensionPage() {
   return (
     <WorkspaceShell>
       <section className="page-panel extension-page">
-        <div className="page-hero">
+        <div className="workspace-command-bar">
           <div>
-            <span className="eyebrow">Gmail extension</span>
-            <h1>Policy intelligence directly inside enterprise email.</h1>
-            <p>Detect compose windows, scan drafts, cite policies, and insert safe rewrites without changing user behavior.</p>
+            <h1>Integrations</h1>
+            <p>Deploy compliance intelligence into Gmail, API workflows, webhooks, and internal tools.</p>
           </div>
-          <div className="page-hero-metric"><MailCheck size={18} /><strong>0.9s</strong><span>median scan latency</span></div>
+          <div className="workspace-command-status">
+            <span><MailCheck size={15} /> Chrome extension ready</span>
+            <span><KeyRound size={15} /> API enabled</span>
+          </div>
         </div>
         <div className="extension-showcase">
           <div>
@@ -57,6 +59,11 @@ export function ExtensionPage() {
             Keep the backend running so the extension can call `/analyze`. Then click the small ComplyLens button inside Gmail compose.
           </p>
         </section>
+        <div className="integration-grid">
+          <article className="signal-card"><KeyRound size={18} /><span>API Keys</span><strong>Ready for backend clients</strong></article>
+          <article className="signal-card"><Webhook size={18} /><span>Webhooks</span><strong>Send scan events to review tools</strong></article>
+          <article className="signal-card"><Braces size={18} /><span>SDK</span><strong>POST /analyze and /rewrite</strong></article>
+        </div>
         <div className="extension-ops-grid">
           {extensionSignals.map((signal) => (
             <article className="signal-card" key={signal.label}>

@@ -4,8 +4,10 @@ import { ActivityPage } from "./pages/ActivityPage";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { ExtensionPage } from "./pages/ExtensionPage";
+import { InboxPage } from "./pages/InboxPage";
 import { LandingPage } from "./pages/LandingPage";
 import { PoliciesPage } from "./pages/PoliciesPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export function App() {
@@ -15,11 +17,15 @@ export function App() {
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/signup" element={<AuthPage mode="signup" />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/inbox" element={<InboxPage />} />
       <Route path="/analytics" element={<AnalyticsPage />} />
-      <Route path="/activity" element={<ActivityPage />} />
+      <Route path="/activity" element={<Navigate replace to="/audit" />} />
+      <Route path="/audit" element={<ActivityPage />} />
       <Route path="/policies" element={<PoliciesPage />} />
-      <Route path="/extension" element={<ExtensionPage />} />
+      <Route path="/extension" element={<Navigate replace to="/integrations" />} />
+      <Route path="/integrations" element={<ExtensionPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="*" element={<Navigate replace to="/" />} />
     </Routes>
   );

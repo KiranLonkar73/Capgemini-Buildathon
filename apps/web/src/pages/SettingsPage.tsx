@@ -42,13 +42,15 @@ export function SettingsPage() {
   return (
     <WorkspaceShell>
       <section className="page-panel settings-page">
-        <div className="page-hero">
+        <div className="workspace-command-bar">
           <div>
-            <span className="eyebrow">Workspace controls</span>
-            <h1>Govern how AI applies company policy.</h1>
+            <h1>Workspace Settings</h1>
             <p>Configure organization identity, confidence thresholds, active policy memory, and review behavior.</p>
           </div>
-          <div className="page-hero-metric"><Gauge size={18} /><strong>0.62</strong><span>default threshold</span></div>
+          <div className="workspace-command-status">
+            <span><Gauge size={15} /> Default threshold 0.62</span>
+            <span><ShieldCheck size={15} /> Human review active</span>
+          </div>
         </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
         <div className="settings-grid">

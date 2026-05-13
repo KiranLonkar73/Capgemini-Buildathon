@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { ArrowUp, FileText, Paperclip } from "lucide-react";
+import { ArrowUp, FileText, MailCheck, Paperclip, ShieldCheck, Wand2 } from "lucide-react";
 import {
   applyRewrite,
   demoDocument,
@@ -13,6 +13,13 @@ import { FindingsPanel } from "../features/compliance/FindingsPanel";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
+
+const complianceSessions = [
+  { title: "Vendor Contract Review", type: "Document", status: "3 open findings" },
+  { title: "Sales Outreach Audit", type: "Email", status: "1 rewrite pending" },
+  { title: "HR Handbook Scan", type: "Policy", status: "Ready" },
+  { title: "Gmail Draft Analysis", type: "Extension", status: "Live channel" }
+];
 
 export function DashboardPage() {
   const [draft, setDraft] = useState(demoDocument);
@@ -99,23 +106,58 @@ export function DashboardPage() {
   return (
     <WorkspaceShell>
       <section className="ops-dashboard work-dashboard">
-        <div className="work-topbar">
+        <div className="workspace-command-bar">
           <div>
-            <span className="eyebrow">Work</span>
-            <h1>Review text like a chat.</h1>
-            <p>Type, attach a file, then get a clear compliance answer with fixes.</p>
+            <h1>Compliance Workspace</h1>
+            <p>Analyze communication, inspect policy reasoning, and approve safe rewrites from one active session.</p>
+          </div>
+          <div className="workspace-command-status">
+            <span><ShieldCheck size={15} /> Policy memory active</span>
+            <span><MailCheck size={15} /> Gmail ready</span>
           </div>
         </div>
 
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
 
         <div className="work-grid">
+          <aside className="session-rail">
+            <div className="rail-header">
+              <strong>Compliance Sessions</strong>
+              <span>{complianceSessions.length} active</span>
+            </div>
+            <div className="session-list">
+              {complianceSessions.map((session, index) => (
+                <button className={index === 0 ? "active" : ""} key={session.title} type="button">
+                  <span>{session.type}</span>
+                  <strong>{session.title}</strong>
+                  <small>{session.status}</small>
+                </button>
+              ))}
+            </div>
+            <div
+              className="rail-dropzone"
+              onClick={() => fileRef.current?.click()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  fileRef.current?.click();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              <Paperclip size={16} />
+              <strong>Add document</strong>
+              <span>PDF, DOCX, EML, HTML, TXT</span>
+            </div>
+          </aside>
+
           <section className="analysis-workbench">
             <div className="codex-workspace">
               <div className="codex-chat-head">
                 <div>
-                  <strong>ComplyLens chat</strong>
-                  <span>Ask with text or file input.</span>
+                  <strong>Active Review</strong>
+                  <span>Vendor Contract Review</span>
                 </div>
                 <div className="scan-state">
                   <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
@@ -126,7 +168,7 @@ export function DashboardPage() {
               <div className="codex-thread">
                 <article className="thread-bubble thread-bubble--system">
                   <span className="thread-role">ComplyLens</span>
-                  <p>I check your draft against policy, point to the risky text, and suggest a safer rewrite.</p>
+                  <p>Scanning communication against active policy memory. Findings will include policy references, severity, and rewrite options.</p>
                 </article>
                 <article className="thread-bubble thread-bubble--user">
                   <span className="thread-role">You</span>
@@ -142,7 +184,7 @@ export function DashboardPage() {
                   {activeViolation && (
                     <div className="thread-summary-grid">
                       <div>
-                        <strong>Why</strong>
+                        <strong>AI reasoning</strong>
                         <span>{activeViolation.explanation}</span>
                       </div>
                       <div>
@@ -186,6 +228,12 @@ export function DashboardPage() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            <div className="workflow-strip">
+              <div><FileText size={15} /><span>Original captured</span></div>
+              <div><ShieldCheck size={15} /><span>Policies retrieved</span></div>
+              <div><Wand2 size={15} /><span>Rewrite generated</span></div>
             </div>
 
             <div className="document-card">

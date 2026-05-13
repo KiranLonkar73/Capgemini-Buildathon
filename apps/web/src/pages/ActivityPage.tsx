@@ -1,4 +1,4 @@
-import { Activity, Bot, ShieldCheck, Upload } from "lucide-react";
+import { Activity, Bot, CheckCircle2, GitBranch, MailCheck, ShieldCheck, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { samplePolicies } from "@complylens/shared";
 import { PanelTitle } from "../components/common/PanelTitle";
@@ -9,17 +9,20 @@ export function ActivityPage() {
   return (
     <WorkspaceShell>
       <section className="ops-dashboard simple-dashboard">
-        <div className="simple-page-head">
-          <span className="premium-icon"><Activity size={18} /></span>
+        <div className="workspace-command-bar">
           <div>
-            <h1>Activity</h1>
-            <p>What happened, what changed, and what the AI noticed.</p>
+            <h1>Audit Trail</h1>
+            <p>Trace scans, rewrites, policy retrieval, Gmail events, uploads, and reviewer decisions.</p>
+          </div>
+          <div className="workspace-command-status">
+            <span><GitBranch size={15} /> 4 policy retrievals</span>
+            <span><MailCheck size={15} /> 1 Gmail event</span>
           </div>
         </div>
 
         <div className="intelligence-grid intelligence-grid--balanced">
           <section className="ops-card">
-            <PanelTitle label="AI insights feed" title="Priority observations" />
+            <PanelTitle label="AI review queue" title="Priority observations" />
             <div className="insight-list">
               {aiInsights.map((insight) => (
                 <div key={insight}><Bot size={16} />{insight}</div>
@@ -28,7 +31,7 @@ export function ActivityPage() {
           </section>
 
           <section className="ops-card wide">
-            <PanelTitle label="Enterprise communication activity" title="Audit and workflow history" />
+            <PanelTitle label="Compliance log" title="Operational history" />
             <div className="activity-feed">
               {activityFeed.map((activity) => (
                 <article className={`activity-item tone-${activity.tone}`} key={activity.title}>
@@ -76,6 +79,14 @@ export function ActivityPage() {
                   <small>{policy.passages} passages · {policy.owner}</small>
                 </div>
               ))}
+            </div>
+          </section>
+          <section className="ops-card">
+            <PanelTitle label="Reviewer actions" title="Decision states" />
+            <div className="insight-list">
+              <div><CheckCircle2 size={16} /> 14 rewrites accepted by owners</div>
+              <div><ShieldCheck size={16} /> 6 items marked safe after review</div>
+              <div><Activity size={16} /> 3 high-risk findings still open</div>
             </div>
           </section>
         </div>

@@ -1,5 +1,5 @@
 import { ChangeEvent, useState } from "react";
-import { FileSearch, ShieldCheck, Upload } from "lucide-react";
+import { Database, FileSearch, GitBranch, ShieldCheck, Upload } from "lucide-react";
 import { samplePolicies } from "@complylens/shared";
 import { uploadPolicyDocument } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
@@ -44,11 +44,14 @@ export function PoliciesPage() {
   return (
     <WorkspaceShell>
       <section className="page-panel simple-dashboard">
-        <div className="simple-page-head">
-          <span className="premium-icon"><ShieldCheck size={18} /></span>
+        <div className="workspace-command-bar">
           <div>
-            <h1>Policies</h1>
-            <p>Upload the rules that power every scan and rewrite.</p>
+            <h1>Policy Infrastructure</h1>
+            <p>Upload company rules, monitor indexing health, and manage the retrieval memory behind every scan.</p>
+          </div>
+          <div className="workspace-command-status">
+            <span><Database size={15} /> 829 chunks indexed</span>
+            <span><GitBranch size={15} /> 94% retrieval health</span>
           </div>
         </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
@@ -62,6 +65,11 @@ export function PoliciesPage() {
               </span>
               <input accept=".pdf,.doc,.docx,.eml,.html,.htm,.md,.rtf,.txt" disabled={uploading} onChange={uploadPolicy} type="file" />
             </label>
+            <div className="policy-health-grid">
+              <div><strong>Indexed chunks</strong><span>829</span></div>
+              <div><strong>Last sync</strong><span>12m ago</span></div>
+              <div><strong>Coverage areas</strong><span>Legal, HR, Security, Finance</span></div>
+            </div>
             <div className="policy-table">
               {policyRows.map((policy) => (
                 <article className="policy-row wide" key={policy.id}>

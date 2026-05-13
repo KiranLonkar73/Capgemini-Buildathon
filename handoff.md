@@ -1,6 +1,55 @@
 # Handoff
 
 ## Current Progress
+- Installed `spec-kit` globally via `specify 0.8.9`.
+- Added local machine helpers for future and existing projects:
+  - `/Users/lol/.local/bin/specify-here`
+  - `/Users/lol/.local/bin/new-spec-project`
+  - `~/.zshrc` aliases/functions: `spec-here`, `spec-new`, `spec-existing`
+- Initialized this repo with spec-kit and committed the generated workflow files:
+  - `.specify/`
+  - `.agents/`
+  - `AGENTS.md`
+- Expanded upload parsing and UI accept paths beyond TXT/PDF/DOCX:
+  - Web app and policy upload now support `PDF`, `DOC`, `DOCX`, `EML`, `HTML`, `MD`, `RTF`, and `TXT`.
+  - Backend parser now supports `.eml`, `.html/.htm`, `.md`, `.doc`, and `.rtf` in addition to existing formats.
+- Reworked the Gmail extension UX:
+  - Replaced the old large fixed panel with a small compose FAB.
+  - Added a compact tooltip/overlay near matched text or the compose area.
+  - Tooltip now shows policy reference, why it matters, suggested rewrite, and quick actions.
+- Reworked the product structure into simpler, more focused tabs:
+  - `Work`, `Reports`, `Activity`, `Policies`
+  - `Work` is now the primary operational surface.
+- Simplified the `Work` tab into a chat-style compliance tool:
+  - Main composer now has a real editable textarea in the primary chat surface.
+  - Users can type directly in the main composer, attach a file with the paperclip button, and run analysis from the same place.
+  - Added keyboard shortcut support: `Cmd+Enter` / `Ctrl+Enter` runs the compliance check.
+  - Kept the visual comparison view below the composer and findings/results on the right.
+- Rebuilt the workspace IA from page-based dashboard navigation into an operational AI platform shell:
+  - Replaced the workspace top navigation with a persistent left sidebar.
+  - Sidebar now includes `Workspace`, `Inbox`, `Policies`, `Integrations`, `Reports`, `Audit Trail`, `Settings`, and `Profile`.
+  - Added new routes/pages for `Inbox` and `Profile`.
+  - Redirected legacy `/activity` to `/audit` and `/extension` to `/integrations`.
+- Reframed the `Work` page as `Compliance Workspace`:
+  - Added a left-side compliance session rail.
+  - Kept the center active review surface for typing, upload, analysis, and highlighted comparison.
+  - Kept the right intelligence rail for score, findings, policy reference, AI reasoning, and rewrite actions.
+  - Added compact workflow state chips for original capture, policy retrieval, and rewrite generation.
+- Reframed operational pages around workflows:
+  - `Inbox` now represents risky communications needing action.
+  - `Reports` is now `Risk Intelligence` with operational risk, rewrite adoption, reviewer agreement, unsafe phrase patterns, and policy violation trends.
+  - `Audit Trail` now emphasizes scans, rewrites, policy retrieval, Gmail events, uploads, and reviewer decisions.
+  - `Policies` now reads as policy infrastructure with indexing status, chunk counts, coverage areas, retrieval health, and upload flow.
+  - `Integrations` now includes extension setup plus API key, webhook, and SDK/API modules.
+  - `Profile` now captures organization identity, policy model, compliance threshold, review owner, and retrieval configuration.
+- Simplified filler copy across the app and made utility more explicit:
+  - Removed decorative/filler strips from `Work`.
+  - Tightened `Reports` and `Policies` copy to emphasize actual user value.
+- Added a clearer extension setup section in the extension page:
+  - Build the extension.
+  - Open `chrome://extensions`.
+  - Enable Developer Mode.
+  - Load unpacked from `dist/extension`.
 - Created this handoff file before starting project analysis.
 - Read `project_context.md`.
 - Extracted and reviewed `/Users/lol/Downloads/29_Policy_Compliance_Checker.pdf`.
@@ -58,6 +107,16 @@
   - Reduced lower analytics clutter by consolidating team and policy coverage into one card and removing redundant security/rewrite panels from the main dashboard surface.
   - Fixed mobile workspace header row sizing so the dashboard content no longer slides under the two-row mobile nav.
   - Verified dashboard rendering in Playwright on desktop and mobile.
+- Completed spec-kit + workflow + product capability pass:
+  - Commit `c9fb97f`: `Add spec-kit workflow and richer compliance review flows`
+  - Commit `fc0e910`: `Simplify work UI and add extension install guide`
+  - Commit `fe50eac`: `Refine work chat UI and remove filler copy`
+  - Commit `110cd10`: `Fix work composer input flow`
+- Completed operational platform IA pass:
+  - Replaced generic top workspace nav with enterprise-style left sidebar.
+  - Added session-oriented workspace anatomy.
+  - Added missing `Inbox`, `Integrations`, and `Profile` product areas.
+  - Reworked old dashboard pages into workflow-oriented operational modules.
 
 ## Done
 - Initialized handoff tracking.
@@ -135,6 +194,19 @@
   - `npm run build:extension` passes.
   - `python3 -m py_compile backend/app/*.py` passes.
   - Browser route smoke test passed for `/` and `/dashboard`.
+- Spec-kit and current product verification:
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - `npm run typecheck` passes.
+  - `python3 -m compileall backend/app` passes.
+  - Main `Work` composer now accepts direct typing again after the chat-UI refactor.
+  - GitHub `origin/main` includes latest commit `110cd10`.
+- Operational IA verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - `npm run build:extension` passes.
+  - Browser checked `/dashboard`, `/inbox`, and `/integrations` at desktop size.
+  - Browser checked `/dashboard` at mobile size.
 - Pending cleanup verification:
   - `npm run typecheck` passes.
   - `npm run build:web` passes.
@@ -164,13 +236,15 @@
 ## Yet To Be Done
 - Replace or archive stale EV content in `project_context.md` when user approves.
 - Add provider-backed embeddings/LLM reasoning behind the current backend API. Current backend is local deterministic retrieval, not an external LLM/RAG provider.
-- Add persistence for uploaded policy chunks and company settings; current backend store is in-memory.
 - Add evaluation dataset, precision/recall reporting, and false-positive metrics.
 - Add automated tests for backend analyzer/parser and frontend workflows.
 - Validate the Chrome extension inside a real Gmail compose window after loading `dist/extension` in Chrome.
 - Consider adding component-level visual regression tests for the redesigned UI.
+- Make compliance sessions persistent instead of seeded static examples.
+- Add real session creation, file history, and saved rewrite approvals.
+- Connect Inbox and Audit Trail to backend events instead of seeded frontend data.
 - Further split extension content script into separate files if the extension grows; current file is modularized internally but still one Vite entry file.
-- Add true multiple-compose Gmail support; current content script still targets the first matching compose body.
+- Add true multiple-compose Gmail support; current content script still targets the first matching compose body in Gmail.
 - Replace local JSON backend persistence with a real DB/vector store when moving beyond demo deployment.
 - Continue remaining backend/RAG/evaluation/testing work when the user wants to move beyond frontend polish.
 
@@ -181,9 +255,26 @@
 - Current frontend command: `npm run dev:web`.
 - Current backend command: `python3 -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`.
 - Extension build output for Chrome loading: `dist/extension`.
+- Current extension UX is:
+  - Gmail compose FAB labeled `CL`
+  - Compact tooltip with policy reference / why / rewrite
+  - Apply rewrite, rescan, and hide actions
 - GitHub repo: `https://github.com/LakshyaKGupta/complylens-policy-checker`.
 - Current branch tracks `origin/main`.
-- Product code commit: `5907c75` (`Build routed compliance platform spine`); this handoff was updated after that push.
+- Latest product commits after the original platform spine:
+  - `c9fb97f` `Add spec-kit workflow and richer compliance review flows`
+  - `fc0e910` `Simplify work UI and add extension install guide`
+  - `fe50eac` `Refine work chat UI and remove filler copy`
+  - `110cd10` `Fix work composer input flow`
+- Latest IA/product direction:
+  - App is now intended to feel like an enterprise AI compliance operating system.
+  - Avoid returning to generic dashboard/card layouts.
+  - Keep all future UI changes workflow-centric: scan, find violation, reason, cite policy, rewrite, approve, audit, deploy.
+- Current `Work` tab behavior:
+  - Primary editable input is the main chat composer.
+  - Paperclip uploads file input from the same composer.
+  - `Run check` button and `Cmd/Ctrl+Enter` both trigger analysis.
+  - Lower card is now comparison/highlight view, not the primary writing surface.
 - Web app screenshot artifacts from verification:
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-final.png`
   - `/Users/lol/Docs/antigravity/capgmeini/complylens-web-mobile.png`

@@ -9,7 +9,9 @@
   .workflow-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .dashboard-command,
   .dashboard-focus-strip,
-  .work-grid {
+  .work-grid,
+  .workflow-grid,
+  .profile-grid {
     grid-template-columns: 1fr;
   }
   .ops-grid { grid-template-columns: 1fr; }
@@ -27,7 +29,9 @@
   .auth-layout,
   .extension-showcase,
   .extension-install-steps,
-  .thread-summary-grid {
+  .thread-summary-grid,
+  .policy-health-grid,
+  .integration-grid {
     grid-template-columns: 1fr;
   }
   .codex-chat-head,
@@ -48,7 +52,25 @@
 
 @media (max-width: 680px) {
   .workspace-shell {
+    grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
+  }
+  .workspace-sidebar {
+    position: static;
+    height: auto;
+    padding: 12px;
+  }
+  .workspace-sidebar-nav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .workspace-sidebar-nav a {
+    flex: 0 0 auto;
+  }
+  .workspace-org-card {
+    display: none;
   }
   .site-nav,
   .workspace-nav {
@@ -240,6 +262,20 @@
     align-items: flex-start;
   }
   .ops-dashboard { height: auto; padding: 12px; }
+  .workspace-command-bar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .workspace-command-status {
+    justify-content: flex-start;
+  }
+  .workflow-row {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+  .workflow-row em {
+    grid-column: 2;
+    text-align: left;
+  }
   .codex-workspace,
   .document-card {
     border-radius: 18px;
