@@ -45,6 +45,18 @@ export function ExtensionPage() {
             <button type="button">Apply rewrite</button>
           </div>
         </div>
+        <section className="ops-card extension-install-card">
+          <PanelTitle label="How to apply the extension" title="Load it in Chrome in 4 steps" />
+          <div className="extension-install-steps">
+            <div><strong>1</strong><span>Run `npm run build:extension`.</span></div>
+            <div><strong>2</strong><span>Open Chrome and go to `chrome://extensions`.</span></div>
+            <div><strong>3</strong><span>Turn on Developer mode, then click Load unpacked.</span></div>
+            <div><strong>4</strong><span>Select `/Users/lol/Docs/antigravity/capgmeini/dist/extension` and open Gmail compose.</span></div>
+          </div>
+          <p className="extension-install-note">
+            Keep the backend running so the extension can call `/analyze`. Then click the small ComplyLens button inside Gmail compose.
+          </p>
+        </section>
         <div className="extension-ops-grid">
           {extensionSignals.map((signal) => (
             <article className="signal-card" key={signal.label}>

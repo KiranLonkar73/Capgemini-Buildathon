@@ -9,6 +9,7 @@
   .workflow-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .dashboard-command,
   .dashboard-focus-strip,
+  .work-value-strip,
   .work-grid {
     grid-template-columns: 1fr;
   }
@@ -25,10 +26,18 @@
   .analytics-grid,
   .metric-grid,
   .auth-layout,
-  .extension-showcase {
+  .extension-showcase,
+  .extension-install-steps,
+  .work-outcome-strip {
     grid-template-columns: 1fr;
   }
-  .document-content { grid-template-columns: 1fr; overflow: auto; }
+  .codex-chat-head,
+  .composer-meta,
+  .composer-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .document-content { overflow: auto; }
   .findings-sidebar { grid-template-columns: 1fr; }
   .ops-card.wide { grid-column: span 1; }
   .workflow-map,
@@ -223,7 +232,9 @@
     flex: 1;
   }
   .work-steps,
-  .dashboard-feature-nav {
+  .dashboard-feature-nav,
+  .work-value-strip,
+  .work-outcome-strip {
     grid-template-columns: 1fr;
   }
   .cta-footer,
@@ -233,6 +244,16 @@
     align-items: flex-start;
   }
   .ops-dashboard { height: auto; padding: 12px; }
+  .codex-workspace,
+  .document-card {
+    border-radius: 18px;
+  }
+  .thread-bubble {
+    max-width: 100%;
+  }
+  .thread-bubble--user {
+    justify-self: stretch;
+  }
   .document-toolbar div { width: 100%; flex-wrap: wrap; }
   .document-toolbar button { flex: 1; }
 }

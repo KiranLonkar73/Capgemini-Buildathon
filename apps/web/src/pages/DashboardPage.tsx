@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { FileText, Play, Upload } from "lucide-react";
+import { CheckCircle2, FileText, Play, ShieldCheck, Sparkles, Upload, Wand2 } from "lucide-react";
 import {
   applyRewrite,
   demoDocument,
@@ -96,14 +96,20 @@ export function DashboardPage() {
     setNotice({ kind: "success", text: "Rewrite applied to the document draft." });
   }
 
+  const valuePoints = [
+    { icon: ShieldCheck, title: "See the risk", copy: "Find the exact line that can cause trouble." },
+    { icon: Sparkles, title: "Understand why", copy: "Read the rule and why it matters in simple words." },
+    { icon: Wand2, title: "Fix it fast", copy: "Use the rewrite instead of editing from scratch." }
+  ];
+
   return (
     <WorkspaceShell>
       <section className="ops-dashboard work-dashboard">
         <div className="work-topbar">
           <div>
             <span className="eyebrow">Work</span>
-            <h1>Check a message or document.</h1>
-            <p>Write, upload, scan, then fix the highlighted text.</p>
+            <h1>Your compliance workspace.</h1>
+            <p>Paste a draft or upload a file. ComplyLens finds risky lines and gives you a safer version.</p>
           </div>
           <div className="work-actions">
             <button onClick={pasteText} type="button">
@@ -123,9 +129,9 @@ export function DashboardPage() {
 
         <div className="work-steps" aria-label="How to use">
           {[
-            ["1", "Write or upload"],
-            ["2", "Review the compare view"],
-            ["3", "Apply fixes"]
+            ["1", "Add your draft"],
+            ["2", "Read the result"],
+            ["3", "Use the safe rewrite"]
           ].map(([number, label]) => (
             <div key={number}>
               <strong>{number}</strong>
@@ -136,18 +142,64 @@ export function DashboardPage() {
 
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
 
+        <div className="work-value-strip" aria-label="Why this helps">
+          {valuePoints.map((item) => (
+            <article key={item.title}>
+              <span className="premium-icon">
+                <item.icon size={16} />
+              </span>
+              <div>
+                <strong>{item.title}</strong>
+                <p>{item.copy}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
         <div className="work-grid">
           <section className="analysis-workbench">
-            <div className="review-header compact-review-header">
-              <span>
-                <FileText size={16} />
-                {documentName}
-              </span>
-              <div className="scan-state">
-                <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
-                {loading ? "Checking" : `${visibleViolations.length} issues`}
+            <div className="codex-workspace">
+              <div className="codex-chat-head">
+                <div>
+                  <strong>ComplyLens chat</strong>
+                  <span>One place to write, upload, and review.</span>
+                </div>
+                <div className="scan-state">
+                  <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
+                  {loading ? "Checking" : `${visibleViolations.length} issues`}
+                </div>
+              </div>
+
+              <div className="codex-thread">
+                <article className="thread-bubble thread-bubble--system">
+                  <span className="thread-role">ComplyLens</span>
+                  <p>I compare your draft against company policy, show risky text, and suggest safer wording.</p>
+                </article>
+                <article className="thread-bubble thread-bubble--user">
+                  <span className="thread-role">You</span>
+                  <p>{documentName}</p>
+                </article>
+              </div>
+
+              <div className="codex-composer">
+                <div className="composer-meta">
+                  <span>
+                    <FileText size={16} />
+                    {documentName}
+                  </span>
+                  <span>{draft.trim().split(/\s+/).filter(Boolean).length} words</span>
+                </div>
+                <div className="composer-actions">
+                  <button onClick={pasteText} type="button">Demo draft</button>
+                  <button onClick={() => fileRef.current?.click()} type="button">Upload file</button>
+                  <button className="primary-work-action" disabled={loading} onClick={() => void analyze()} type="button">
+                    <Play size={16} />
+                    {loading ? "Checking..." : "Check draft"}
+                  </button>
+                </div>
               </div>
             </div>
+
             <div className="document-card">
               <div className="document-toolbar">
                 <span>
@@ -161,6 +213,21 @@ export function DashboardPage() {
                 <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
               </div>
               <HighlightedEditor draft={draft} onChange={setDraft} onSelectViolation={setActiveId} violations={visibleViolations} />
+            </div>
+
+            <div className="work-outcome-strip">
+              <div>
+                <CheckCircle2 size={16} />
+                <span>{report.score}% score</span>
+              </div>
+              <div>
+                <ShieldCheck size={16} />
+                <span>{report.flaggedSections} risky sections found</span>
+              </div>
+              <div>
+                <Wand2 size={16} />
+                <span>{visibleViolations.length ? "Ready with rewrites" : "No rewrite needed"}</span>
+              </div>
             </div>
           </section>
 
