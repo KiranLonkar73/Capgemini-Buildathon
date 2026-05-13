@@ -168,59 +168,59 @@ export function DashboardPage() {
           </button>
         </div>
 
-        {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
-
         <div className="employee-workspace-grid">
           <section className={`employee-analysis-panel ${hasRun ? "has-results" : ""}`}>
-            <div
-              className={`upload-dropzone-large ${selectedFile ? "is-ready" : ""}`}
-              onClick={() => fileRef.current?.click()}
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={dropDocument}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="upload-icon-ring">
-                <UploadCloud size={34} />
+            <div className="workspace-input-stage">
+              <div
+                className={`upload-dropzone-large ${selectedFile ? "is-ready" : ""}`}
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={dropDocument}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="upload-icon-ring">
+                  <UploadCloud size={34} />
+                </div>
+                <strong>{selectedFile ? selectedFile.name : "Drop a document here"}</strong>
+                <span>PDF, DOCX, DOC, EML, HTML, RTF, TXT, or pasted text</span>
+                <small>{selectedFile ? "File ready for analysis" : "Click the box to choose a file"}</small>
               </div>
-              <strong>{selectedFile ? selectedFile.name : "Drop a document here"}</strong>
-              <span>PDF, DOCX, DOC, EML, HTML, RTF, TXT, or pasted text</span>
-              <small>{selectedFile ? "File ready for analysis" : "Click the box to choose a file"}</small>
-            </div>
 
-            <div className="workspace-text-entry">
-              <div className="composer-meta">
-                <span>
-                  <FileText size={16} />
-                  {documentName}
-                </span>
-                <span>{draft.trim().split(/\s+/).filter(Boolean).length} words</span>
+              <div className="workspace-text-entry">
+                <div className="composer-meta">
+                  <span>
+                    <FileText size={16} />
+                    {documentName}
+                  </span>
+                  <span>{draft.trim().split(/\s+/).filter(Boolean).length} words</span>
+                </div>
+                <textarea
+                  aria-label="Write or paste text for compliance analysis"
+                  className="composer-textarea"
+                  onChange={(event) => {
+                    setDraft(event.target.value);
+                    setSelectedFile(null);
+                    setDocumentName("Typed compliance check");
+                    setHasRun(false);
+                  }}
+                  placeholder="Write or paste text here if you do not want to upload a file."
+                  value={draft}
+                />
               </div>
-              <textarea
-                aria-label="Write or paste text for compliance analysis"
-                className="composer-textarea"
-                onChange={(event) => {
-                  setDraft(event.target.value);
-                  setSelectedFile(null);
-                  setDocumentName("Typed compliance check");
-                  setHasRun(false);
-                }}
-                placeholder="Write or paste text here if you do not want to upload a file."
-                value={draft}
-              />
-            </div>
 
-            <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
+              <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
 
-            <div className="analysis-action-row">
-              <button className="secondary-action-button" onClick={() => fileRef.current?.click()} type="button">
-                <Paperclip size={16} />
-                Choose file
-              </button>
-              <button className="primary-work-action run-analysis-button" disabled={loading || !canAnalyze} onClick={() => void runAnalysis()} type="button">
-                <ArrowUp size={16} />
-                {loading ? "Running analysis..." : "Run Analysis"}
-              </button>
+              <div className="analysis-action-row">
+                <button className="secondary-action-button" onClick={() => fileRef.current?.click()} type="button">
+                  <Paperclip size={16} />
+                  Choose file
+                </button>
+                <button className="primary-work-action run-analysis-button" disabled={loading || !canAnalyze} onClick={() => void runAnalysis()} type="button">
+                  <ArrowUp size={16} />
+                  {loading ? "Running analysis..." : "Run Analysis"}
+                </button>
+              </div>
             </div>
 
             {hasRun && (
@@ -281,6 +281,11 @@ export function DashboardPage() {
           </section>
 
           <aside className="employee-history-panel">
+            {notice && (
+              <div className="history-notice" role="status">
+                <NoticeBox notice={notice} onClose={() => setNotice(null)} />
+              </div>
+            )}
             <div className="rail-header">
               <strong><History size={16} /> Session history</strong>
               <span>{history.length} checks</span>

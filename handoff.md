@@ -239,6 +239,14 @@
   - Workspace shell now reads saved personalization and applies accent/density classes across dashboard pages.
   - Browser checked dashboard and settings at `1366x768` and dashboard mobile at `390x844`; no horizontal overflow found.
   - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed workspace alignment and notification fix:
+  - Rebuilt notice UI with status icons and tighter grid alignment.
+  - Moved dashboard notices into the employee history side panel so notifications no longer push down or cover the main upload/result workspace.
+  - Centered the pre-analysis upload/text stage inside the main workspace panel.
+  - Hid the whole input stage after analysis so results occupy the main panel cleanly without leftover empty spacing.
+  - Browser checked workspace before and after analysis at `1366x768`; main panel x/width stayed stable and no horizontal overflow was found.
+  - Browser checked mobile dashboard at `390x844`; no horizontal overflow was found.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:
