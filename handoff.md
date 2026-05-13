@@ -232,6 +232,13 @@
   - Added simple admin reports, employee assignment, extension setup, and API notes into the combined admin/settings page.
   - Started the frontend at `http://127.0.0.1:5173/` and backend at `http://127.0.0.1:8000/`.
   - Verification passed: `npm run typecheck`, `npm run build:web`, browser checked employee workspace analysis at `1366x768` and admin/employee policy access behavior.
+- Completed workspace personalization and session controls pass:
+  - Added persistent `Home` and `Logout` controls to the dashboard/sidebar shell.
+  - Logout clears the demo role from `localStorage` and returns the user to `/login`.
+  - Added Settings personalization for accent color, layout density, default work input, and rewrite tone.
+  - Workspace shell now reads saved personalization and applies accent/density classes across dashboard pages.
+  - Browser checked dashboard and settings at `1366x768` and dashboard mobile at `390x844`; no horizontal overflow found.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:

@@ -1,8 +1,12 @@
-import { Activity, Building2, FileText, Settings, Shield } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Activity, Building2, FileText, Home, LogOut, Settings, Shield } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Brand } from "../components/common/Brand";
 
 type WorkspaceRole = "admin" | "employee";
+type WorkspacePersonalization = {
+  accent?: "indigo" | "emerald" | "amber";
+  density?: "comfortable" | "compact";
+};
 
 function getStoredRole(): WorkspaceRole {
   if (typeof window === "undefined") {
@@ -29,11 +33,32 @@ function getWorkspaceLinks(role: WorkspaceRole) {
   ];
 }
 
+function getPersonalization(): WorkspacePersonalization {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    return JSON.parse(window.localStorage.getItem("complylens-personalization") ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
 export function WorkspaceShell({ children, role = getStoredRole() }: { children: React.ReactNode; role?: WorkspaceRole }) {
+  const navigate = useNavigate();
   const workspaceLinks = getWorkspaceLinks(role);
+  const personalization = getPersonalization();
+  const accent = personalization.accent ?? "indigo";
+  const density = personalization.density ?? "comfortable";
+
+  function logout() {
+    window.localStorage.removeItem("complylens-role");
+    navigate("/login");
+  }
 
   return (
-    <main className="workspace-shell">
+    <main className={`workspace-shell tone-${accent} density-${density}`}>
       <aside className="workspace-sidebar">
         <Link className="brand-link" to="/">
           <Brand />
@@ -46,11 +71,23 @@ export function WorkspaceShell({ children, role = getStoredRole() }: { children:
             </NavLink>
           ))}
         </nav>
-        <div className="workspace-org-card">
-          <Building2 size={16} />
-          <div>
-            <strong>Demo Enterprise</strong>
-            <span>{role === "admin" ? "Admin workspace" : "Employee workspace"}</span>
+        <div className="workspace-sidebar-footer">
+          <div className="workspace-org-card">
+            <Building2 size={16} />
+            <div>
+              <strong>Demo Enterprise</strong>
+              <span>{role === "admin" ? "Admin workspace" : "Employee workspace"}</span>
+            </div>
+          </div>
+          <div className="workspace-quick-actions">
+            <Link to="/">
+              <Home size={15} />
+              Home
+            </Link>
+            <button onClick={logout} type="button">
+              <LogOut size={15} />
+              Logout
+            </button>
           </div>
         </div>
       </aside>

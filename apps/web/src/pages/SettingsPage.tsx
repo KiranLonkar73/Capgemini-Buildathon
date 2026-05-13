@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { BarChart3, Bell, Building2, Gauge, KeyRound, Puzzle, ShieldCheck, UserPlus, UsersRound } from "lucide-react";
+import { BarChart3, Bell, Gauge, KeyRound, Palette, Puzzle, ShieldCheck, SlidersHorizontal, UserPlus, UsersRound } from "lucide-react";
 import { saveCompanySettings } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
@@ -18,10 +18,34 @@ const employeePreferences = [
   { title: "Assigned by admin", copy: "Admins manage policy uploads, access, and company rules.", icon: UsersRound }
 ];
 
+type Personalization = {
+  accent: "indigo" | "emerald" | "amber";
+  density: "comfortable" | "compact";
+  defaultInput: "upload" | "text";
+  rewriteTone: "plain" | "formal" | "friendly";
+};
+
+const defaultPersonalization: Personalization = {
+  accent: "indigo",
+  density: "comfortable",
+  defaultInput: "upload",
+  rewriteTone: "plain"
+};
+
+function loadPersonalization(): Personalization {
+  if (typeof window === "undefined") return defaultPersonalization;
+  try {
+    return { ...defaultPersonalization, ...JSON.parse(window.localStorage.getItem("complylens-personalization") ?? "{}") };
+  } catch {
+    return defaultPersonalization;
+  }
+}
+
 export function SettingsPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [notice, setNotice] = useState<Notice>(null);
   const [saving, setSaving] = useState(false);
+  const [personalization, setPersonalization] = useState<Personalization>(() => loadPersonalization());
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,6 +69,13 @@ export function SettingsPage() {
     }
   }
 
+  function updatePersonalization(next: Partial<Personalization>) {
+    const updated = { ...personalization, ...next };
+    setPersonalization(updated);
+    window.localStorage.setItem("complylens-personalization", JSON.stringify(updated));
+    setNotice({ kind: "success", text: "Workspace personalization updated." });
+  }
+
   return (
     <WorkspaceShell role={role}>
       <section className="page-panel settings-page">
@@ -61,32 +92,76 @@ export function SettingsPage() {
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
 
         <div className="settings-grid settings-grid--wide">
-          <form className="settings-form" onSubmit={save}>
-            <PanelTitle label={role === "admin" ? "Organization" : "Profile"} title={role === "admin" ? "Company profile" : "Employee account"} />
-            <label>
-              {role === "admin" ? "Organization name" : "Name"}
-              <input defaultValue={role === "admin" ? "Demo Enterprise" : "Employee User"} name="organizationName" />
-            </label>
-            <label>
-              Work email
-              <input defaultValue={role === "admin" ? "admin@demo-enterprise.com" : "employee@demo-enterprise.com"} name="email" />
-            </label>
-            {role === "admin" && (
-              <>
+          <div className="profile-settings-stack">
+            <form className="settings-form" onSubmit={save}>
+              <PanelTitle label={role === "admin" ? "Organization" : "Profile"} title={role === "admin" ? "Company profile" : "Employee account"} />
+              <label>
+                {role === "admin" ? "Organization name" : "Name"}
+                <input defaultValue={role === "admin" ? "Demo Enterprise" : "Employee User"} name="organizationName" />
+              </label>
+              <label>
+                Work email
+                <input defaultValue={role === "admin" ? "admin@demo-enterprise.com" : "employee@demo-enterprise.com"} name="email" />
+              </label>
+              {role === "admin" && (
+                <>
+                  <label>
+                    Active policy set
+                    <input defaultValue="seeded-enterprise-policy" name="activePolicySet" />
+                  </label>
+                  <label>
+                    Confidence threshold
+                    <input defaultValue="0.62" max="0.95" min="0.2" name="threshold" step="0.01" type="number" />
+                  </label>
+                </>
+              )}
+              <button className="primary-action" disabled={saving} type="submit">
+                {saving ? "Saving..." : "Save"}
+              </button>
+            </form>
+
+            <section className="settings-form personalization-card">
+              <PanelTitle label="Personalization" title="Workspace preferences" />
+              <div className="preference-group">
+                <span><Palette size={16} /> Accent color</span>
+                <div className="preference-options">
+                  {(["indigo", "emerald", "amber"] as const).map((accent) => (
+                    <button className={personalization.accent === accent ? "active" : ""} key={accent} onClick={() => updatePersonalization({ accent })} type="button">
+                      <i className={`accent-dot accent-${accent}`} />
+                      {accent}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="preference-group">
+                <span><SlidersHorizontal size={16} /> Layout density</span>
+                <div className="preference-options">
+                  {(["comfortable", "compact"] as const).map((density) => (
+                    <button className={personalization.density === density ? "active" : ""} key={density} onClick={() => updatePersonalization({ density })} type="button">
+                      {density}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="preference-grid">
                 <label>
-                  Active policy set
-                  <input defaultValue="seeded-enterprise-policy" name="activePolicySet" />
+                  Default work input
+                  <select value={personalization.defaultInput} onChange={(event) => updatePersonalization({ defaultInput: event.target.value as Personalization["defaultInput"] })}>
+                    <option value="upload">Upload first</option>
+                    <option value="text">Text first</option>
+                  </select>
                 </label>
                 <label>
-                  Confidence threshold
-                  <input defaultValue="0.62" max="0.95" min="0.2" name="threshold" step="0.01" type="number" />
+                  Rewrite tone
+                  <select value={personalization.rewriteTone} onChange={(event) => updatePersonalization({ rewriteTone: event.target.value as Personalization["rewriteTone"] })}>
+                    <option value="plain">Plain and simple</option>
+                    <option value="formal">Formal legal</option>
+                    <option value="friendly">Friendly workplace</option>
+                  </select>
                 </label>
-              </>
-            )}
-            <button className="primary-action" disabled={saving} type="submit">
-              {saving ? "Saving..." : "Save"}
-            </button>
-          </form>
+              </div>
+            </section>
+          </div>
 
           {role === "admin" ? (
             <div className="admin-control-stack">

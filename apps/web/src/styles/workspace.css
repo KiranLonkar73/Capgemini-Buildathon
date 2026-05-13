@@ -3,6 +3,27 @@
   grid-template-columns: 248px minmax(0, 1fr);
   min-height: 100vh;
 }
+.workspace-shell.tone-emerald {
+  --accent: #059669;
+  --glow: #34d399;
+}
+.workspace-shell.tone-amber {
+  --accent: #d97706;
+  --glow: #fbbf24;
+}
+.workspace-shell.density-compact .ops-dashboard,
+.workspace-shell.density-compact .workspace-main .page-panel {
+  padding: 12px;
+}
+.workspace-shell.density-compact .workspace-command-bar {
+  padding: 11px 13px;
+}
+.workspace-shell.density-compact .employee-analysis-panel,
+.workspace-shell.density-compact .employee-history-panel,
+.workspace-shell.density-compact .settings-form,
+.workspace-shell.density-compact .ops-card {
+  padding: 12px;
+}
 .workspace-main {
   min-width: 0;
   min-height: 100vh;
@@ -70,6 +91,40 @@
   margin-top: 3px;
   color: var(--muted);
   font-size: 0.78rem;
+}
+.workspace-sidebar-footer {
+  display: grid;
+  gap: 10px;
+}
+.workspace-quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.workspace-quick-actions a,
+.workspace-quick-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--secondary);
+  background: rgba(255,255,255,.72);
+  text-decoration: none;
+  font-size: .78rem;
+  font-weight: 800;
+}
+.workspace-quick-actions a:hover,
+.workspace-quick-actions button:hover {
+  color: var(--text);
+  border-color: rgba(79,70,229,.22);
+  background: rgba(238,242,255,.76);
+}
+.workspace-quick-actions svg {
+  color: var(--accent);
 }
 
 .ops-dashboard {
