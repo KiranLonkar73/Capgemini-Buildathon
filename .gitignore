@@ -2,7 +2,10 @@ node_modules
 dist
 .env
 .env.local
+backend/data/*.json
 *.log
+__pycache__/
+*.py[cod]
 .playwright-mcp
 *.png
 *.tsbuildinfo
