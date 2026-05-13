@@ -121,6 +121,8 @@ class PolicyStore:
         query_vector = vectorize(query)
         ranked = []
         for chunk in self._chunks:
+            if not chunk.reference.enabled:
+                continue
             score = cosine(query_vector, chunk.vector)
             if score > 0:
                 ranked.append((score, chunk.reference))

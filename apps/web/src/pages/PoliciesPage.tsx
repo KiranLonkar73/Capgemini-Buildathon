@@ -1,7 +1,7 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Database, FileSearch, GitBranch, ShieldCheck, Upload } from "lucide-react";
-import { samplePolicies } from "@complylens/shared";
-import { uploadPolicyDocument } from "../api/complianceApi";
+import { samplePolicies, type PolicyReference } from "@complylens/shared";
+import { listPolicyVersions, togglePolicyReference, uploadPolicyDocument } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
@@ -13,6 +13,19 @@ export function PoliciesPage() {
   const [notice, setNotice] = useState<Notice>(null);
   const [uploading, setUploading] = useState(false);
   const [policyRows, setPolicyRows] = useState(samplePolicies);
+  const [policyVersions, setPolicyVersions] = useState<PolicyReference[]>([]);
+
+  useEffect(() => {
+    void refreshPolicyVersions();
+  }, []);
+
+  async function refreshPolicyVersions() {
+    try {
+      setPolicyVersions(await listPolicyVersions());
+    } catch {
+      setPolicyVersions([]);
+    }
+  }
 
   async function uploadPolicy(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -31,6 +44,7 @@ export function PoliciesPage() {
         },
         ...rows
       ]);
+      await refreshPolicyVersions();
       setNotice({ kind: "success", text: `Uploaded ${file.name} and indexed ${result.chunks} policy chunks.` });
     } catch (error) {
       setNotice({
@@ -39,6 +53,16 @@ export function PoliciesPage() {
       });
     } finally {
       setUploading(false);
+    }
+  }
+
+  async function togglePolicy(policy: PolicyReference) {
+    try {
+      const updated = await togglePolicyReference(policy.id, !(policy.enabled ?? true));
+      setPolicyVersions((items) => items.map((item) => item.id === updated.id ? updated : item));
+      setNotice({ kind: "success", text: `${updated.policy} is now ${updated.enabled ? "enabled" : "disabled"} at version ${updated.version}.` });
+    } catch (error) {
+      setNotice({ kind: "error", text: `Could not update policy. ${error instanceof Error ? error.message.slice(0, 120) : ""}` });
     }
   }
 
@@ -80,6 +104,19 @@ export function PoliciesPage() {
               <div><strong>Coverage areas</strong><span>Legal, HR, Security, Finance</span></div>
             </div>
             <div className="policy-table">
+              {policyVersions.map((policy) => (
+                <article className={`policy-row wide policy-version-row ${policy.enabled === false ? "disabled" : ""}`} key={policy.id}>
+                  <span>{policy.owner}</span>
+                  <div>
+                    <strong>{policy.policy}</strong>
+                    <small>{policy.section} · v{policy.version ?? 1} · {policy.enabled === false ? "Disabled" : "Enabled"}</small>
+                    <p>{policy.text}</p>
+                  </div>
+                  <button onClick={() => void togglePolicy(policy)} type="button">
+                    {policy.enabled === false ? "Enable" : "Disable"}
+                  </button>
+                </article>
+              ))}
               {policyRows.map((policy) => (
                 <article className="policy-row wide" key={policy.id}>
                   <span>{policy.owner}</span>

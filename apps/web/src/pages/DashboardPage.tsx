@@ -1,5 +1,5 @@
-import { ChangeEvent, DragEvent, useRef, useState } from "react";
-import { AlertTriangle, ArrowUp, BarChart3, CheckCircle2, Database, FileText, History, KeyRound, MailCheck, Paperclip, RefreshCw, ShieldCheck, UploadCloud, UsersRound } from "lucide-react";
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import { AlertTriangle, ArrowUp, BarChart3, CheckCircle2, Database, Download, FileText, History, KeyRound, MailCheck, Paperclip, RefreshCw, ShieldCheck, UploadCloud, UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   applyRewrite,
@@ -7,11 +7,12 @@ import {
   type ComplianceReport,
   type Violation
 } from "@complylens/shared";
-import { analyzeDocument, analyzeUploadedDocument } from "../api/complianceApi";
+import { analyzeDocument, analyzeUploadedDocument, listSavedSessions } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
+import type { SavedSession } from "@complylens/shared";
 
 type SessionHistoryItem = {
   id: string;
@@ -22,6 +23,7 @@ type SessionHistoryItem = {
 };
 
 const emptyReport = runDemoComplianceCheck("");
+const departments = ["All", "Legal", "Sales", "HR", "Security", "Finance"];
 
 export function DashboardPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
@@ -35,6 +37,9 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
+  const [department, setDepartment] = useState("Sales");
+  const [team, setTeam] = useState("Outbound");
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
   const [history, setHistory] = useState<SessionHistoryItem[]>([
     { id: "hist-1", title: "Sales email draft", source: "Email text", risk: "2 issues fixed", time: "Today" },
     { id: "hist-2", title: "Vendor NDA", source: "DOCX upload", risk: "Reviewed", time: "Yesterday" },
@@ -45,6 +50,18 @@ export function DashboardPage() {
   const visibleViolations = report.violations.filter((violation) => !hiddenIds.includes(violation.id));
   const activeViolation = visibleViolations.find((violation) => violation.id === activeId) ?? visibleViolations[0];
   const canAnalyze = Boolean(selectedFile || draft.trim());
+
+  useEffect(() => {
+    void refreshSessions();
+  }, [department]);
+
+  async function refreshSessions() {
+    try {
+      setSavedSessions(await listSavedSessions(department));
+    } catch {
+      setSavedSessions([]);
+    }
+  }
 
   function recordHistory(nextReport: ComplianceReport, source: string) {
     const risk = nextReport.violations.length
@@ -73,23 +90,25 @@ export function DashboardPage() {
     setNotice(null);
     try {
       if (selectedFile) {
-        const result = await analyzeUploadedDocument(selectedFile, 0.62);
+        const result = await analyzeUploadedDocument(selectedFile, 0.62, department, team);
         setDraft(result.text);
         setReport(result.report);
         setHasRun(true);
         setActiveId(result.report.violations[0]?.id ?? "");
         setHiddenIds([]);
         recordHistory(result.report, selectedFile.name.split(".").pop()?.toUpperCase() ?? "Upload");
+        void refreshSessions();
         setNotice({ kind: "success", text: `Analysis completed for ${selectedFile.name}.` });
         return;
       }
 
-      const nextReport = await analyzeDocument({ text: draft, documentName, threshold: 0.62 });
+      const nextReport = await analyzeDocument({ text: draft, documentName, threshold: 0.62, department, team });
       setReport(nextReport);
       setHasRun(true);
       setActiveId(nextReport.violations[0]?.id ?? "");
       setHiddenIds([]);
       recordHistory(nextReport, "Typed text");
+      void refreshSessions();
       setNotice({ kind: "success", text: "Analysis completed with policy citations." });
     } catch (error) {
       const fallback = runDemoComplianceCheck(draft);
@@ -172,6 +191,37 @@ export function DashboardPage() {
     setDraft(nextDraft);
     setHiddenIds((ids) => [...new Set([...ids, violation.id])]);
     setNotice({ kind: "success", text: "Rewrite applied to the document draft." });
+  }
+
+  function exportReportPdf() {
+    if (!hasRun) return;
+    const pdf = [
+      "%PDF-1.4",
+      "1 0 obj<<>>endobj",
+      "2 0 obj<< /Length 520 >>stream",
+      `BT /F1 14 Tf 50 760 Td (ComplyLens Analysis Report) Tj 0 -24 Td (Document: ${documentName.slice(0, 70)}) Tj 0 -20 Td (Department: ${department} / ${team}) Tj 0 -20 Td (Score: ${report.score} | Findings: ${visibleViolations.length}) Tj 0 -24 Td (Summary: ${(report.summary ?? "No summary").slice(0, 110)}) Tj ET`,
+      "endstream endobj",
+      "3 0 obj<< /Type /Page /Parent 4 0 R /Contents 2 0 R /Resources<< /Font<< /F1<< /Type /Font /Subtype /Helvetica /BaseFont /Helvetica >> >> >> >>endobj",
+      "4 0 obj<< /Type /Pages /Kids[3 0 R] /Count 1 >>endobj",
+      "5 0 obj<< /Type /Catalog /Pages 4 0 R >>endobj",
+      "xref 0 6",
+      "0000000000 65535 f ",
+      "0000000009 00000 n ",
+      "0000000029 00000 n ",
+      "0000000600 00000 n ",
+      "0000000750 00000 n ",
+      "0000000810 00000 n ",
+      "trailer<< /Root 5 0 R /Size 6 >>",
+      "startxref",
+      "870",
+      "%%EOF"
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([pdf], { type: "application/pdf" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${documentName.replace(/\W+/g, "-") || "analysis-report"}.pdf`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   if (role === "admin") {
@@ -268,6 +318,18 @@ export function DashboardPage() {
         <div className="employee-workspace-grid">
           <section className={`employee-analysis-panel ${hasRun ? "has-results" : ""}`}>
             <div className="workspace-input-stage" onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={dropDocument}>
+              <div className="department-filter-row">
+                <label>
+                  Department
+                  <select value={department} onChange={(event) => setDepartment(event.target.value)}>
+                    {departments.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Team
+                  <input value={team} onChange={(event) => setTeam(event.target.value)} />
+                </label>
+              </div>
               <div
                 className={`upload-dropzone-large ${selectedFile ? "is-ready" : ""} ${dragActive ? "is-dragging" : ""}`}
                 onClick={() => fileRef.current?.click()}
@@ -333,6 +395,10 @@ export function DashboardPage() {
                     <UploadCloud size={15} />
                     Upload another
                   </button>
+                  <button className="secondary-action-button" onClick={exportReportPdf} type="button">
+                    <Download size={15} />
+                    Export PDF
+                  </button>
                 </div>
 
                 <div className="result-workspace">
@@ -377,6 +443,13 @@ export function DashboardPage() {
                 </div>
               </section>
             )}
+            {loading && (
+              <div className="analysis-skeleton" aria-label="Analysis loading">
+                <span />
+                <span />
+                <span />
+              </div>
+            )}
           </section>
 
           <aside className="employee-history-panel">
@@ -390,6 +463,13 @@ export function DashboardPage() {
               <span>{history.length} checks</span>
             </div>
             <div className="history-list">
+              {savedSessions.map((session) => (
+                <button key={session.id} type="button">
+                  <strong>{session.documentName}</strong>
+                  <span>{session.department} · {session.team}</span>
+                  <small>{session.flaggedSections} issues · score {session.score}</small>
+                </button>
+              ))}
               {history.map((item) => (
                 <button key={item.id} type="button">
                   <strong>{item.title}</strong>

@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Activity, Bot, CheckCircle2, Download, FileText, GitBranch, MailCheck, ShieldCheck } from "lucide-react";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { activityFeed, aiInsights } from "../data/productData";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
+import { listAuditEvents, markAuditEventReviewed } from "../api/complianceApi";
+import type { AuditEvent } from "@complylens/shared";
 
 const employeeHistory = [
   { title: "Vendor NDA scan", detail: "DOCX upload checked. 2 risky clauses rewritten.", time: "Today" },
@@ -10,24 +12,50 @@ const employeeHistory = [
   { title: "HR note", detail: "Email draft checked. No policy issues found.", time: "May 12" }
 ];
 
-const seededAuditEvents = activityFeed.map((activity, index) => ({
+type AuditEventRow = AuditEvent & { tone?: string };
+
+const seededAuditEvents: AuditEventRow[] = activityFeed.map((activity, index) => ({
   ...activity,
   id: `audit-${index}`,
-  status: index < 2 ? "open" : "reviewed",
-  owner: index % 2 === 0 ? "Legal" : "Compliance"
+  status: index < 2 ? "open" as const : "reviewed" as const,
+  owner: index % 2 === 0 ? "Legal" : "Compliance",
+  department: index % 2 === 0 ? "Legal" : "Sales",
+  eventType: "scan" as const
 }));
+const departments = ["All", "Legal", "Sales", "HR", "Security", "Finance"];
 
 export function ActivityPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [filter, setFilter] = useState<"all" | "open" | "reviewed">("all");
-  const [auditEvents, setAuditEvents] = useState(seededAuditEvents);
+  const [department, setDepartment] = useState("All");
+  const [auditEvents, setAuditEvents] = useState<AuditEventRow[]>(seededAuditEvents);
+
+  useEffect(() => {
+    if (role === "admin") void refreshAuditEvents();
+  }, [role, department]);
+
+  async function refreshAuditEvents() {
+    try {
+      const events = await listAuditEvents(department);
+      setAuditEvents(events.length ? events : seededAuditEvents);
+    } catch {
+      setAuditEvents(seededAuditEvents);
+    }
+  }
 
   const visibleAuditEvents = useMemo(
     () => auditEvents.filter((event) => filter === "all" || event.status === filter),
     [auditEvents, filter]
   );
 
-  function markReviewed(id: string) {
+  async function markReviewed(id: string) {
+    try {
+      const updated = await markAuditEventReviewed(id);
+      setAuditEvents((events) => events.map((event) => event.id === id ? updated : event));
+      return;
+    } catch {
+      // keep local demo behavior available when backend is offline
+    }
     setAuditEvents((events) => events.map((event) => event.id === id ? { ...event, status: "reviewed" } : event));
   }
 
@@ -95,6 +123,12 @@ export function ActivityPage() {
                   </button>
                 ))}
               </div>
+              <label className="audit-department-filter">
+                Department
+                <select value={department} onChange={(event) => setDepartment(event.target.value)}>
+                  {departments.map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
               <button className="secondary-action-button audit-export-button" onClick={exportAudit} type="button">
                 <Download size={15} />
                 Export CSV
@@ -120,7 +154,7 @@ export function ActivityPage() {
                     <div className="audit-actions">
                       <time>{activity.time}</time>
                       {activity.status === "open" && (
-                        <button onClick={() => markReviewed(activity.id)} type="button">
+                        <button onClick={() => void markReviewed(activity.id)} type="button">
                           Mark reviewed
                         </button>
                       )}

@@ -1,4 +1,4 @@
-import { API_BASE_URL, applyRewrite, runDemoComplianceCheck, type ComplianceReport, type Violation } from "@complylens/shared";
+import { applyRewrite, runDemoComplianceCheck, type ComplianceReport, type Violation } from "@complylens/shared";
 
 const FAB_ID = "complylens-gmail-fab";
 const TOOLTIP_ID = "complylens-gmail-tooltip";
@@ -8,6 +8,14 @@ type TooltipState = "loading" | "ready" | "error";
 let latestReport: ComplianceReport | null = null;
 let latestText = "";
 let liveScanTimer = 0;
+
+function getApiBaseUrl() {
+  return new Promise<string>((resolve) => {
+    chrome.storage?.sync?.get(["complylensApiBaseUrl"], (result) => {
+      resolve(result.complylensApiBaseUrl || "http://127.0.0.1:8000");
+    });
+  });
+}
 
 function getCompose() {
   return document.querySelector<HTMLElement>('[role="textbox"][aria-label*="Message Body"]');
@@ -33,7 +41,8 @@ function setComposeText(text: string) {
 }
 
 async function analyzeDraft(text: string) {
-  const response = await fetch(`${API_BASE_URL}/analyze`, {
+  const apiBaseUrl = await getApiBaseUrl();
+  const response = await fetch(`${apiBaseUrl}/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, documentName: "gmail-draft", threshold: 0.62 })

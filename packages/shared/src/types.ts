@@ -17,6 +17,8 @@ export type PolicyReference = {
   owner: PolicyOwner;
   text: string;
   score?: number;
+  enabled?: boolean;
+  version?: number;
 };
 
 export type Violation = {
@@ -50,6 +52,8 @@ export type AnalyzeRequest = {
   documentName?: string;
   organizationId?: string;
   threshold?: number;
+  department?: string;
+  team?: string;
 };
 
 export type RewriteRequest = {
@@ -63,4 +67,37 @@ export type CompanySettings = {
   organizationName: string;
   threshold: number;
   activePolicySet: string;
+};
+
+export type Employee = {
+  id: string;
+  email: string;
+  name: string;
+  department: string;
+  role: "employee" | "admin";
+  status: "invited" | "active" | "disabled";
+  invitedAt: string;
+};
+
+export type SavedSession = {
+  id: string;
+  documentName: string;
+  department: string;
+  team: string;
+  score: number;
+  flaggedSections: number;
+  status: string;
+  createdAt: string;
+  report: ComplianceReport;
+};
+
+export type AuditEvent = {
+  id: string;
+  title: string;
+  detail: string;
+  owner: string;
+  status: "open" | "reviewed";
+  time: string;
+  department: string;
+  eventType: "scan" | "rewrite" | "policy" | "extension" | "user";
 };

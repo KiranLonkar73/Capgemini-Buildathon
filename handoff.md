@@ -262,6 +262,19 @@
   - Increased spacing between employee Settings sections and cards.
   - Browser verified admin login routing, admin dashboard, audit filtering/review action, generated API key, employee settings spacing, and mobile no-overflow checks.
   - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed persistence and extension integration feature pass:
+  - Added backend state models/endpoints for employees, invites, employee status, saved analysis sessions, audit events, policy versions, and policy enable/disable toggles.
+  - Analysis calls now save sessions and write audit events with department/team metadata.
+  - Added role-based route guards for dashboard/audit/settings/policies; unauthenticated users redirect to `/login`, employees cannot access admin policy routes.
+  - Added department/team filters to employee workspace analysis and saved sessions display.
+  - Added loading skeletons during analysis.
+  - Added report export button that downloads a simple PDF analysis summary.
+  - Added admin employee invite flow and user management table with status controls.
+  - Added admin policy version rows with enable/disable toggles and version incrementing.
+  - Admin audit trail now loads backend audit events, supports department filtering, review status updates, and CSV export.
+  - Extension popup now supports configurable backend URL, connection test, and stored API base URL.
+  - Gmail content script now uses the stored backend URL instead of a hardcoded API constant.
+  - Verification passed: `npm run typecheck`, `npm run build:web`, `npm run build:extension`, `python3 -m py_compile backend/app/*.py`, backend smoke tests, and browser flow checks for guards, invites, policies, audit, sessions, and PDF export button.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:

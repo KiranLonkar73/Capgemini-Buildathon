@@ -15,6 +15,8 @@ class PolicyReference(BaseModel):
     owner: str
     text: str
     score: float = 0
+    enabled: bool = True
+    version: int = 1
 
 
 class Violation(BaseModel):
@@ -48,6 +50,8 @@ class AnalyzeRequest(BaseModel):
     documentName: str | None = None
     organizationId: str = "demo-org"
     threshold: float = Field(default=0.62, ge=0, le=1)
+    department: str = "General"
+    team: str = "Workspace"
 
 
 class RewriteRequest(BaseModel):
@@ -71,3 +75,43 @@ class HealthResponse(BaseModel):
     ok: bool
     service: str
     policy_chunks: int
+
+
+class EmployeeInvite(BaseModel):
+    email: str
+    name: str = "New employee"
+    department: str = "General"
+    role: Literal["employee", "admin"] = "employee"
+    status: Literal["invited", "active", "disabled"] = "invited"
+
+
+class Employee(EmployeeInvite):
+    id: str
+    invitedAt: str
+
+
+class SavedSession(BaseModel):
+    id: str
+    documentName: str
+    department: str = "General"
+    team: str = "Workspace"
+    score: int
+    flaggedSections: int
+    status: str
+    createdAt: str
+    report: ComplianceReport
+
+
+class AuditEvent(BaseModel):
+    id: str
+    title: str
+    detail: str
+    owner: str = "Compliance"
+    status: Literal["open", "reviewed"] = "open"
+    time: str
+    department: str = "General"
+    eventType: Literal["scan", "rewrite", "policy", "extension", "user"] = "scan"
+
+
+class PolicyToggle(BaseModel):
+    enabled: bool

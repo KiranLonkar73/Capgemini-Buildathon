@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models import AnalyzeRequest, CompanySettings, HealthResponse, RewriteRequest, RewriteResponse
+from .models import AnalyzeRequest, CompanySettings, EmployeeInvite, HealthResponse, PolicyToggle, RewriteRequest, RewriteResponse
 from .parser import extract_text_from_upload
 from .services import ComplianceService
 
@@ -59,6 +59,55 @@ async def upload_policy(
     return {"uploaded": True, "chunks": len(references), "references": references}
 
 
+@app.get("/policies")
+def policies():
+    return service.list_policy_versions()
+
+
+@app.patch("/policies/{reference_id}")
+def toggle_policy(reference_id: str, payload: PolicyToggle):
+    try:
+        return service.toggle_policy(reference_id, payload.enabled)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/employees")
+def employees():
+    return service.list_employees()
+
+
+@app.post("/employees")
+def invite_employee(payload: EmployeeInvite):
+    return service.invite_employee(payload)
+
+
+@app.patch("/employees/{employee_id}/status")
+def update_employee_status(employee_id: str, status: str):
+    try:
+        return service.update_employee_status(employee_id, status)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/sessions")
+def sessions(department: str | None = None):
+    return service.list_sessions(department)
+
+
+@app.get("/audit-events")
+def audit_events(department: str | None = None):
+    return service.list_audit_events(department)
+
+
+@app.patch("/audit-events/{event_id}/reviewed")
+def mark_audit_reviewed(event_id: str):
+    try:
+        return service.mark_audit_reviewed(event_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
 @app.post("/analyze")
 def analyze(payload: AnalyzeRequest):
     if not payload.text.strip():
@@ -74,7 +123,12 @@ def analyze(payload: AnalyzeRequest):
 
 
 @app.post("/analyze-upload")
-async def analyze_upload(file: UploadFile = File(...), threshold: float = Form(0.62)):
+async def analyze_upload(
+    file: UploadFile = File(...),
+    threshold: float = Form(0.62),
+    department: str = Form("General"),
+    team: str = Form("Workspace"),
+):
     try:
         text = await extract_text_from_upload(file)
     except Exception as exc:
@@ -83,7 +137,7 @@ async def analyze_upload(file: UploadFile = File(...), threshold: float = Form(0
     if not text.strip():
         raise HTTPException(status_code=400, detail="Uploaded document did not contain extractable text.")
 
-    report = service.analyze(AnalyzeRequest(text=text, documentName=file.filename, threshold=threshold))
+    report = service.analyze(AnalyzeRequest(text=text, documentName=file.filename, threshold=threshold, department=department, team=team))
     logger.info("upload analysis document=%s score=%s violations=%s", file.filename, report.score, report.flaggedSections)
     return {"text": text, "report": report}
 

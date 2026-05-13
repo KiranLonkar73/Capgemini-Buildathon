@@ -323,6 +323,17 @@
   color: var(--accent);
 }
 
+.employee-invite-row input {
+  width: 100%;
+  min-height: 36px;
+  margin-top: 5px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255,255,255,.86);
+  color: var(--text);
+}
+
 .employee-invite-row strong,
 .employee-invite-row span,
 .integration-setup-card strong,
@@ -346,6 +357,41 @@
   color: var(--accent);
   background: rgba(238,242,255,.82);
   font-weight: 800;
+}
+
+.employee-table {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.employee-table article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 86px 110px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(248,250,252,.78);
+}
+
+.employee-table strong,
+.employee-table span {
+  display: block;
+}
+
+.employee-table span {
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.employee-table select {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  color: var(--text);
 }
 
 .admin-report-grid {
@@ -376,6 +422,24 @@
 .admin-report-grid strong {
   font-size: 1.55rem;
   letter-spacing: -0.04em;
+}
+
+.policy-version-row {
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+
+.policy-version-row.disabled {
+  opacity: .62;
+}
+
+.policy-version-row button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(79,70,229,.2);
+  border-radius: 999px;
+  color: var(--accent);
+  background: rgba(238,242,255,.82);
+  font-weight: 820;
 }
 
 .restricted-panel {

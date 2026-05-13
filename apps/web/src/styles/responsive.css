@@ -42,6 +42,7 @@
   .employee-settings-cards,
   .admin-report-grid,
   .extension-checklist,
+  .department-filter-row,
   .integration-grid {
     grid-template-columns: 1fr;
   }
@@ -316,6 +317,14 @@
   }
   .document-toolbar div { width: 100%; flex-wrap: wrap; }
   .document-toolbar button { flex: 1; }
+  .employee-table article,
+  .policy-version-row,
+  .audit-feed .activity-item {
+    grid-template-columns: 1fr;
+  }
+  .audit-actions {
+    justify-items: start;
+  }
 }
 
 @media (max-height: 820px) and (min-width: 981px) {

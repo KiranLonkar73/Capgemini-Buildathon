@@ -1,10 +1,11 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { BarChart3, Bell, CheckCircle2, Gauge, KeyRound, Palette, Puzzle, RefreshCw, ShieldCheck, SlidersHorizontal, UserPlus, UsersRound } from "lucide-react";
-import { saveCompanySettings } from "../api/complianceApi";
+import { inviteEmployee, listEmployees, saveCompanySettings, updateEmployeeStatus } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
+import type { Employee } from "@complylens/shared";
 
 const adminReports = [
   { label: "Risk stopped", value: "38", note: "messages blocked this month" },
@@ -49,6 +50,22 @@ export function SettingsPage() {
   const [apiKey, setApiKey] = useState("cl_demo_not_generated");
   const [webhookUrl, setWebhookUrl] = useState("https://company.com/api/complylens/webhook");
   const [extensionSteps, setExtensionSteps] = useState(["build", "load"]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("employee@company.com");
+
+  useEffect(() => {
+    if (role === "admin") {
+      void refreshEmployees();
+    }
+  }, [role]);
+
+  async function refreshEmployees() {
+    try {
+      setEmployees(await listEmployees());
+    } catch {
+      setEmployees([]);
+    }
+  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -83,6 +100,25 @@ export function SettingsPage() {
     const token = `cl_demo_${Math.random().toString(36).slice(2, 8)}_${Math.random().toString(36).slice(2, 14)}`;
     setApiKey(token);
     setNotice({ kind: "success", text: "Demo API key generated. Store real production keys in a secure backend vault." });
+  }
+
+  async function submitInvite() {
+    try {
+      const employee = await inviteEmployee({ email: inviteEmail, name: inviteEmail.split("@")[0] || "New employee", department: "Sales", role: "employee" });
+      setEmployees((items) => [employee, ...items]);
+      setNotice({ kind: "success", text: `Invite created for ${employee.email}.` });
+    } catch (error) {
+      setNotice({ kind: "error", text: `Could not invite employee. ${error instanceof Error ? error.message.slice(0, 120) : ""}` });
+    }
+  }
+
+  async function changeEmployeeStatus(employee: Employee, status: Employee["status"]) {
+    try {
+      const updated = await updateEmployeeStatus(employee.id, status);
+      setEmployees((items) => items.map((item) => item.id === updated.id ? updated : item));
+    } catch {
+      setEmployees((items) => items.map((item) => item.id === employee.id ? { ...item, status } : item));
+    }
   }
 
   function toggleExtensionStep(step: string) {
@@ -209,9 +245,25 @@ export function SettingsPage() {
                   <UserPlus size={18} />
                   <div>
                     <strong>Invite employee</strong>
-                    <span>employee@company.com · Workspace checks only</span>
+                    <input aria-label="Employee invite email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} />
                   </div>
-                  <button type="button">Send</button>
+                  <button onClick={() => void submitInvite()} type="button">Send</button>
+                </div>
+                <div className="employee-table">
+                  {employees.map((employee) => (
+                    <article key={employee.id}>
+                      <div>
+                        <strong>{employee.name}</strong>
+                        <span>{employee.email}</span>
+                      </div>
+                      <span>{employee.department}</span>
+                      <select value={employee.status} onChange={(event) => void changeEmployeeStatus(employee, event.target.value as Employee["status"])}>
+                        <option value="invited">Invited</option>
+                        <option value="active">Active</option>
+                        <option value="disabled">Disabled</option>
+                      </select>
+                    </article>
+                  ))}
                 </div>
               </section>
 

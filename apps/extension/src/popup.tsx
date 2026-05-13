@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { motion } from "framer-motion";
-import { AlertTriangle, CheckCircle2, MailCheck, RefreshCw, Shield, Wand2 } from "lucide-react";
-import { API_BASE_URL, applyRewrite, demoDocument, runDemoComplianceCheck, type ComplianceReport } from "@complylens/shared";
+import { AlertTriangle, CheckCircle2, KeyRound, MailCheck, RefreshCw, Shield, Wand2 } from "lucide-react";
+import { applyRewrite, demoDocument, runDemoComplianceCheck, type ComplianceReport } from "@complylens/shared";
 import "./popup.css";
 
 function Popup() {
@@ -10,16 +10,45 @@ function Popup() {
   const [report, setReport] = useState<ComplianceReport>(() => runDemoComplianceCheck(draft));
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
+  const [apiBaseUrl, setApiBaseUrl] = useState("http://127.0.0.1:8000");
+  const [connected, setConnected] = useState(false);
   useEffect(() => {
     setReport(runDemoComplianceCheck(draft));
   }, [draft]);
+  useEffect(() => {
+    chrome.storage?.sync?.get(["complylensApiBaseUrl"], (result) => {
+      if (result.complylensApiBaseUrl) setApiBaseUrl(result.complylensApiBaseUrl);
+    });
+  }, []);
   const firstViolation = report.violations[0];
+
+  function saveApiBaseUrl(nextUrl = apiBaseUrl) {
+    chrome.storage?.sync?.set({ complylensApiBaseUrl: nextUrl });
+    setNotice("Extension backend URL saved.");
+  }
+
+  async function testConnection() {
+    setLoading(true);
+    setNotice("");
+    try {
+      const response = await fetch(`${apiBaseUrl}/health`);
+      if (!response.ok) throw new Error(await response.text());
+      setConnected(true);
+      saveApiBaseUrl(apiBaseUrl);
+      setNotice("Connected to ComplyLens backend.");
+    } catch (error) {
+      setConnected(false);
+      setNotice(`Could not connect to backend. ${error instanceof Error ? error.message.slice(0, 80) : ""}`);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function scanDraft() {
     setLoading(true);
     setNotice("");
     try {
-      const response = await fetch(`${API_BASE_URL}/analyze`, {
+      const response = await fetch(`${apiBaseUrl}/analyze`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: draft, documentName: "extension-popup-draft", threshold: 0.62 })
@@ -56,6 +85,16 @@ function Popup() {
           <strong>{report.status === "blocked" ? "Medium-high" : "Ready"}</strong>
           <p>{report.flaggedSections} policy risks detected.</p>
         </div>
+      </section>
+
+      <section className="extension-config">
+        <label>
+          <span><KeyRound size={14} /> Backend URL</span>
+          <input value={apiBaseUrl} onChange={(event) => setApiBaseUrl(event.target.value)} />
+        </label>
+        <button className={connected ? "config-button connected" : "config-button"} disabled={loading} onClick={() => void testConnection()} type="button">
+          {connected ? "Connected" : "Test"}
+        </button>
       </section>
 
       <textarea value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} />
