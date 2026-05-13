@@ -247,6 +247,13 @@
   - Browser checked workspace before and after analysis at `1366x768`; main panel x/width stayed stable and no horizontal overflow was found.
   - Browser checked mobile dashboard at `390x844`; no horizontal overflow was found.
   - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed employee settings and workspace input alignment fix:
+  - Reworked employee Settings into a clear two-column desktop layout with profile and personalization side by side, plus preference cards in a balanced row.
+  - Added mobile stacking for personalization controls so employee Settings no longer feels cramped on small screens.
+  - Added real flex/gradient styling for `Run Analysis` so the icon, text, color, and button height align with the rest of the workspace controls.
+  - Made drag/drop more reliable by handling drag events on the full input stage and the dropzone, adding active drag styling, resetting file input value, and showing a ready notice after a file is dropped.
+  - Browser verified employee Settings desktop/mobile, Run Analysis button geometry/color, and drag/drop using a synthetic `drop-test.txt` file.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:

@@ -76,6 +76,79 @@ export function SettingsPage() {
     setNotice({ kind: "success", text: "Workspace personalization updated." });
   }
 
+  const profileForm = (
+    <form className="settings-form" onSubmit={save}>
+      <PanelTitle label={role === "admin" ? "Organization" : "Profile"} title={role === "admin" ? "Company profile" : "Employee account"} />
+      <label>
+        {role === "admin" ? "Organization name" : "Name"}
+        <input defaultValue={role === "admin" ? "Demo Enterprise" : "Employee User"} name="organizationName" />
+      </label>
+      <label>
+        Work email
+        <input defaultValue={role === "admin" ? "admin@demo-enterprise.com" : "employee@demo-enterprise.com"} name="email" />
+      </label>
+      {role === "admin" && (
+        <>
+          <label>
+            Active policy set
+            <input defaultValue="seeded-enterprise-policy" name="activePolicySet" />
+          </label>
+          <label>
+            Confidence threshold
+            <input defaultValue="0.62" max="0.95" min="0.2" name="threshold" step="0.01" type="number" />
+          </label>
+        </>
+      )}
+      <button className="primary-action" disabled={saving} type="submit">
+        {saving ? "Saving..." : "Save"}
+      </button>
+    </form>
+  );
+
+  const personalizationPanel = (
+    <section className="settings-form personalization-card">
+      <PanelTitle label="Personalization" title="Workspace preferences" />
+      <div className="preference-group">
+        <span><Palette size={16} /> Accent color</span>
+        <div className="preference-options">
+          {(["indigo", "emerald", "amber"] as const).map((accent) => (
+            <button className={personalization.accent === accent ? "active" : ""} key={accent} onClick={() => updatePersonalization({ accent })} type="button">
+              <i className={`accent-dot accent-${accent}`} />
+              {accent}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="preference-group">
+        <span><SlidersHorizontal size={16} /> Layout density</span>
+        <div className="preference-options">
+          {(["comfortable", "compact"] as const).map((density) => (
+            <button className={personalization.density === density ? "active" : ""} key={density} onClick={() => updatePersonalization({ density })} type="button">
+              {density}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="preference-grid">
+        <label>
+          Default work input
+          <select value={personalization.defaultInput} onChange={(event) => updatePersonalization({ defaultInput: event.target.value as Personalization["defaultInput"] })}>
+            <option value="upload">Upload first</option>
+            <option value="text">Text first</option>
+          </select>
+        </label>
+        <label>
+          Rewrite tone
+          <select value={personalization.rewriteTone} onChange={(event) => updatePersonalization({ rewriteTone: event.target.value as Personalization["rewriteTone"] })}>
+            <option value="plain">Plain and simple</option>
+            <option value="formal">Formal legal</option>
+            <option value="friendly">Friendly workplace</option>
+          </select>
+        </label>
+      </div>
+    </section>
+  );
+
   return (
     <WorkspaceShell role={role}>
       <section className="page-panel settings-page">
@@ -91,78 +164,30 @@ export function SettingsPage() {
         </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
 
-        <div className="settings-grid settings-grid--wide">
-          <div className="profile-settings-stack">
-            <form className="settings-form" onSubmit={save}>
-              <PanelTitle label={role === "admin" ? "Organization" : "Profile"} title={role === "admin" ? "Company profile" : "Employee account"} />
-              <label>
-                {role === "admin" ? "Organization name" : "Name"}
-                <input defaultValue={role === "admin" ? "Demo Enterprise" : "Employee User"} name="organizationName" />
-              </label>
-              <label>
-                Work email
-                <input defaultValue={role === "admin" ? "admin@demo-enterprise.com" : "employee@demo-enterprise.com"} name="email" />
-              </label>
-              {role === "admin" && (
-                <>
-                  <label>
-                    Active policy set
-                    <input defaultValue="seeded-enterprise-policy" name="activePolicySet" />
-                  </label>
-                  <label>
-                    Confidence threshold
-                    <input defaultValue="0.62" max="0.95" min="0.2" name="threshold" step="0.01" type="number" />
-                  </label>
-                </>
-              )}
-              <button className="primary-action" disabled={saving} type="submit">
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </form>
-
-            <section className="settings-form personalization-card">
-              <PanelTitle label="Personalization" title="Workspace preferences" />
-              <div className="preference-group">
-                <span><Palette size={16} /> Accent color</span>
-                <div className="preference-options">
-                  {(["indigo", "emerald", "amber"] as const).map((accent) => (
-                    <button className={personalization.accent === accent ? "active" : ""} key={accent} onClick={() => updatePersonalization({ accent })} type="button">
-                      <i className={`accent-dot accent-${accent}`} />
-                      {accent}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="preference-group">
-                <span><SlidersHorizontal size={16} /> Layout density</span>
-                <div className="preference-options">
-                  {(["comfortable", "compact"] as const).map((density) => (
-                    <button className={personalization.density === density ? "active" : ""} key={density} onClick={() => updatePersonalization({ density })} type="button">
-                      {density}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="preference-grid">
-                <label>
-                  Default work input
-                  <select value={personalization.defaultInput} onChange={(event) => updatePersonalization({ defaultInput: event.target.value as Personalization["defaultInput"] })}>
-                    <option value="upload">Upload first</option>
-                    <option value="text">Text first</option>
-                  </select>
-                </label>
-                <label>
-                  Rewrite tone
-                  <select value={personalization.rewriteTone} onChange={(event) => updatePersonalization({ rewriteTone: event.target.value as Personalization["rewriteTone"] })}>
-                    <option value="plain">Plain and simple</option>
-                    <option value="formal">Formal legal</option>
-                    <option value="friendly">Friendly workplace</option>
-                  </select>
-                </label>
-              </div>
-            </section>
+        {role === "employee" ? (
+          <div className="employee-settings-layout">
+            <div className="employee-settings-top">
+              {profileForm}
+              {personalizationPanel}
+            </div>
+            <aside className="settings-side employee-settings-cards">
+              {employeePreferences.map(({ title, copy, icon: Icon }) => (
+                <article key={title}>
+                  <Icon size={18} />
+                  <div>
+                    <strong>{title}</strong>
+                    <span>{copy}</span>
+                  </div>
+                </article>
+              ))}
+            </aside>
           </div>
-
+        ) : (
+          <div className="settings-grid settings-grid--wide">
+            <div className="profile-settings-stack">
+              {profileForm}
+              {personalizationPanel}
+            </div>
           {role === "admin" ? (
             <div className="admin-control-stack">
               <section className="ops-card">
@@ -209,20 +234,9 @@ export function SettingsPage() {
                 </div>
               </section>
             </div>
-          ) : (
-            <aside className="settings-side">
-              {employeePreferences.map(({ title, copy, icon: Icon }) => (
-                <article key={title}>
-                  <Icon size={18} />
-                  <div>
-                    <strong>{title}</strong>
-                    <span>{copy}</span>
-                  </div>
-                </article>
-              ))}
-            </aside>
-          )}
-        </div>
+          ) : null}
+          </div>
+        )}
       </section>
     </WorkspaceShell>
   );

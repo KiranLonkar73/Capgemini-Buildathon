@@ -31,6 +31,7 @@ export function DashboardPage() {
   const [activeId, setActiveId] = useState("");
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
   const [history, setHistory] = useState<SessionHistoryItem[]>([
     { id: "hist-1", title: "Sales email draft", source: "Email text", risk: "2 issues fixed", time: "Today" },
@@ -125,14 +126,31 @@ export function DashboardPage() {
     if (file) {
       void selectFile(file);
     }
+    event.target.value = "";
+  }
+
+  function handleDrag(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.type === "dragenter" || event.type === "dragover") {
+      event.dataTransfer.dropEffect = "copy";
+      setDragActive(true);
+    }
+    if (event.type === "dragleave") {
+      setDragActive(false);
+    }
   }
 
   function dropDocument(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
+    event.stopPropagation();
+    setDragActive(false);
     const file = event.dataTransfer.files?.[0];
     if (file) {
       void selectFile(file);
+      return;
     }
+    setNotice({ kind: "error", text: "Drop one supported document file here." });
   }
 
   function startNextUpload() {
@@ -170,11 +188,13 @@ export function DashboardPage() {
 
         <div className="employee-workspace-grid">
           <section className={`employee-analysis-panel ${hasRun ? "has-results" : ""}`}>
-            <div className="workspace-input-stage">
+            <div className="workspace-input-stage" onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={dropDocument}>
               <div
-                className={`upload-dropzone-large ${selectedFile ? "is-ready" : ""}`}
+                className={`upload-dropzone-large ${selectedFile ? "is-ready" : ""} ${dragActive ? "is-dragging" : ""}`}
                 onClick={() => fileRef.current?.click()}
-                onDragOver={(event) => event.preventDefault()}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
                 onDrop={dropDocument}
                 role="button"
                 tabIndex={0}
@@ -184,7 +204,7 @@ export function DashboardPage() {
                 </div>
                 <strong>{selectedFile ? selectedFile.name : "Drop a document here"}</strong>
                 <span>PDF, DOCX, DOC, EML, HTML, RTF, TXT, or pasted text</span>
-                <small>{selectedFile ? "File ready for analysis" : "Click the box to choose a file"}</small>
+                <small>{dragActive ? "Release to attach this file" : selectedFile ? "File ready for analysis" : "Click the box or drag a file onto it"}</small>
               </div>
 
               <div className="workspace-text-entry">

@@ -35,6 +35,8 @@
   .thread-summary-grid,
   .policy-health-grid,
   .settings-grid--wide,
+  .employee-settings-top,
+  .employee-settings-cards,
   .admin-report-grid,
   .integration-grid {
     grid-template-columns: 1fr;
@@ -263,7 +265,9 @@
     flex: 1;
   }
   .dashboard-feature-nav,
-  .thread-summary-grid {
+  .thread-summary-grid,
+  .preference-grid,
+  .preference-options {
     grid-template-columns: 1fr;
   }
   .cta-footer,
