@@ -21,6 +21,12 @@ import { TopNav } from "../layouts/TopNav";
 
 export function LandingPage() {
   const frameRef = useRef<number>();
+  const sectionReveal = {
+    initial: { opacity: 0, y: 28 },
+    transition: { duration: 0.48, ease: "easeOut" },
+    viewport: { once: true, amount: 0.22 },
+    whileInView: { opacity: 1, y: 0 }
+  };
 
   return (
     <main className="site-shell">
@@ -44,7 +50,7 @@ export function LandingPage() {
         <div className="cursor-spotlight" aria-hidden="true" />
         <div className="hero-orbit" aria-hidden="true" />
         <div className="hero-grid-glow" aria-hidden="true" />
-        <motion.div animate={{ opacity: 1, y: 0 }} className="hero-content" initial={{ opacity: 0, y: 18 }} transition={{ duration: 0.42 }}>
+        <motion.div animate={{ opacity: 1, y: 0 }} className="hero-content" initial={{ opacity: 0, y: 18 }} transition={{ duration: 0.52, ease: "easeOut" }}>
           <div className="hero-eyebrow">
             <Sparkles size={15} />
             Policy-aware review engine
@@ -71,7 +77,7 @@ export function LandingPage() {
           </div>
         </motion.div>
 
-        <motion.div animate={{ opacity: 1, x: 0 }} className="hero-visual" initial={{ opacity: 0, x: 24 }} transition={{ delay: 0.1, duration: 0.46 }}>
+        <motion.div animate={{ opacity: 1, x: 0 }} className="hero-visual" initial={{ opacity: 0, x: 24 }} transition={{ delay: 0.12, duration: 0.54, ease: "easeOut" }}>
           <div className="floating-token token-a"><Radar size={15} /> Live</div>
           <div className="floating-token token-b"><CircleGauge size={15} /> 88%</div>
           <div className="analysis-panel elevated">
@@ -103,14 +109,14 @@ export function LandingPage() {
       </section>
 
       <section className="home-section workflow-showcase">
-        <motion.div className="section-heading" initial={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
+        <motion.div className="section-heading" {...sectionReveal}>
           <span className="section-icon"><Workflow size={18} /> Review pipeline</span>
           <h2>One clear workflow from policy to rewrite.</h2>
           <p>Every scan follows a simple, traceable loop built for legal, security, HR, and finance teams.</p>
         </motion.div>
         <div className="workflow-map">
           {workflowSteps.slice(0, 4).map((step, index) => (
-            <motion.article className="workflow-node" initial={{ opacity: 1, y: 0 }} key={step.title} transition={{ delay: index * 0.08 }} viewport={{ once: true }} whileHover={{ y: -8, rotate: index % 2 ? -1 : 1 }} whileInView={{ opacity: 1, y: 0 }}>
+            <motion.article className="workflow-node" initial={{ opacity: 0, y: 22 }} key={step.title} transition={{ delay: index * 0.08, duration: 0.42, ease: "easeOut" }} viewport={{ once: true, amount: 0.18 }} whileHover={{ y: -8, rotate: index % 2 ? -1 : 1 }} whileInView={{ opacity: 1, y: 0 }}>
               <span className="node-index">0{index + 1}</span>
               <span className="premium-icon">
                 <step.icon size={20} />
@@ -131,14 +137,14 @@ export function LandingPage() {
       </section>
 
       <section className="home-section feature-stage" id="features">
-        <motion.div className="section-heading" initial={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
+        <motion.div className="section-heading" {...sectionReveal}>
           <span className="section-icon"><ShieldCheck size={18} /> Governance controls</span>
           <h2>Built for operational AI governance, not another inbox plugin.</h2>
           <p>Fewer alerts, stronger context, and a calmer interface for reviewing high-stakes communication.</p>
         </motion.div>
         <div className="feature-rail">
           {homepageFeatures.slice(0, 3).map((feature, index) => (
-            <motion.article className="feature-card" initial={{ opacity: 1, y: 0 }} key={feature.title} transition={{ delay: index * 0.08 }} viewport={{ once: true }} whileHover={{ y: -8 }} whileInView={{ opacity: 1, y: 0 }}>
+            <motion.article className="feature-card" initial={{ opacity: 0, y: 22 }} key={feature.title} transition={{ delay: index * 0.08, duration: 0.42, ease: "easeOut" }} viewport={{ once: true, amount: 0.18 }} whileHover={{ y: -8 }} whileInView={{ opacity: 1, y: 0 }}>
               <span className="premium-icon">
                 <feature.icon size={20} />
               </span>
@@ -158,7 +164,7 @@ export function LandingPage() {
       </section>
 
       <section className="home-section extension-demo-section" id="demo">
-        <motion.div initial={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
+        <motion.div {...sectionReveal}>
           <span className="section-icon"><MailCheck size={18} /> Gmail extension</span>
           <h2>Gmail checks that feel native to the way teams already work.</h2>
           <p>
@@ -176,7 +182,7 @@ export function LandingPage() {
             </Link>
           </div>
         </motion.div>
-        <motion.div className="gmail-mock" initial={{ opacity: 1, scale: 1 }} viewport={{ once: true }} whileInView={{ opacity: 1, scale: 1 }}>
+        <motion.div className="gmail-mock" initial={{ opacity: 0, scale: 0.96, y: 24 }} transition={{ duration: 0.5, ease: "easeOut" }} viewport={{ once: true, amount: 0.22 }} whileInView={{ opacity: 1, scale: 1, y: 0 }}>
           <div className="gmail-topbar">New message <span>ComplyLens active</span></div>
           <p>We can guarantee delivery by June 14 and offer a full refund if the launch slips.</p>
           <div className="gmail-warning">Legal commitment detected · 88% confidence</div>
@@ -188,8 +194,8 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      <section className="home-section final-cta-section">
-        <motion.div initial={{ opacity: 1, y: 0 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
+      <section className="home-section final-cta-section" id="cta">
+        <motion.div {...sectionReveal}>
           <Sparkles size={30} />
           <h2>Deploy policy-aware AI where communication risk actually starts.</h2>
           <p>Start with document review, extend into Gmail, and build toward organization-specific compliance memory.</p>

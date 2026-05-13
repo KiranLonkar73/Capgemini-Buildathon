@@ -93,6 +93,10 @@
   max-width: 720px;
 }
 
+.hero-eyebrow {
+  animation: soft-pop 620ms ease-out both;
+}
+
 .hero-eyebrow,
 .section-icon,
 .hero-proof-strip span,
@@ -124,6 +128,7 @@
   line-height: 0.9;
   letter-spacing: -0.035em;
   text-wrap: balance;
+  animation: hero-title-load 720ms ease-out both;
 }
 
 .hero-content h1 span {
@@ -141,6 +146,7 @@
   color: var(--secondary);
   font-size: 1.08rem;
   line-height: 1.74;
+  animation: soft-pop 760ms ease-out 90ms both;
 }
 
 .hero-proof-strip {
@@ -160,9 +166,17 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
   font-size: 0.84rem;
   font-weight: 760;
+  animation: soft-pop 700ms ease-out both;
 }
 
+.hero-proof-strip span:nth-child(2) { animation-delay: 80ms; }
+.hero-proof-strip span:nth-child(3) { animation-delay: 150ms; }
+
 .hero-actions { gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+
+.hero-actions > * {
+  animation: soft-pop 680ms ease-out 180ms both;
+}
 
 .hero-visual {
   position: relative;
@@ -176,6 +190,7 @@
   padding: 18px;
   transition: transform 240ms ease, box-shadow 240ms ease;
   will-change: transform;
+  animation: panel-float 7.5s ease-in-out infinite;
 }
 .analysis-panel:hover { transform: translateY(-4px) rotateX(1deg); box-shadow: var(--shadow); }
 .analysis-panel.elevated {
@@ -190,12 +205,14 @@
   bottom: auto;
   width: 286px;
   z-index: 3;
+  animation-delay: -2.2s;
 }
 .analysis-panel.rewrite-card {
   left: 34px;
   bottom: -36px;
   width: 330px;
   z-index: 4;
+  animation-delay: -4.4s;
 }
 .analysis-panel svg { color: var(--accent); }
 .analysis-panel h2, .analysis-panel strong, .analysis-panel p { margin: 0; }
@@ -266,9 +283,10 @@
   font-size: 0.82rem;
   font-weight: 820;
   will-change: transform;
+  animation: token-drift 6s ease-in-out infinite;
 }
 .token-a { top: 6px; right: 36px; }
-.token-b { right: 24px; bottom: 42px; }
+.token-b { right: 24px; bottom: 42px; animation-delay: -2.5s; }
 
 .section-heading {
   max-width: 780px;
@@ -314,7 +332,15 @@
   min-height: 250px;
   padding: 20px;
   overflow: hidden;
+  will-change: translate;
+  animation: card-breathe 7s ease-in-out infinite;
 }
+
+.workflow-node:nth-child(2),
+.feature-card:nth-child(2) { animation-delay: -1.4s; }
+.workflow-node:nth-child(3),
+.feature-card:nth-child(3) { animation-delay: -2.8s; }
+.workflow-node:nth-child(4) { animation-delay: -4.2s; }
 .workflow-node strong, .workflow-node p, .feature-card h3, .feature-card p {
   display: block;
   margin: 0;
@@ -346,7 +372,19 @@
   pointer-events: none;
   background: radial-gradient(circle at 20% 10%, rgba(96, 165, 250, 0.14), transparent 38%);
   opacity: 0.82;
+  animation: card-sheen 6.8s ease-in-out infinite;
 }
+
+.workflow-node .premium-icon,
+.feature-card .premium-icon {
+  animation: icon-bob 5.4s ease-in-out infinite;
+}
+
+.workflow-node:nth-child(2) .premium-icon,
+.feature-card:nth-child(2) .premium-icon { animation-delay: -1.2s; }
+.workflow-node:nth-child(3) .premium-icon,
+.feature-card:nth-child(3) .premium-icon { animation-delay: -2.4s; }
+.workflow-node:nth-child(4) .premium-icon { animation-delay: -3.6s; }
 
 .node-index {
   position: absolute;
@@ -383,6 +421,8 @@
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent), var(--success));
+  transform-origin: left;
+  animation: meter-glide 4.8s ease-in-out infinite;
 }
 
 .feature-icon-row {
@@ -453,6 +493,7 @@
   background: rgba(255, 255, 255, 0.86);
   box-shadow: var(--shadow);
   transform-style: preserve-3d;
+  animation: card-breathe 8s ease-in-out infinite;
 }
 .gmail-topbar { display: flex; justify-content: space-between; color: var(--muted); font-size: 0.82rem; }
 .gmail-topbar span { color: var(--success); font-weight: 800; }
@@ -479,13 +520,20 @@
   place-items: center;
   max-width: 840px;
 }
-.final-cta-section svg { color: var(--accent); margin-bottom: 20px; }
+.final-cta-section > div > svg {
+  color: var(--accent);
+  margin-bottom: 20px;
+  animation: icon-bob 5.4s ease-in-out infinite;
+}
 .final-cta-section .primary-action { margin-top: 28px; }
 
 .cta-icon-cloud {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-top: 22px;
+  animation: token-drift 5.8s ease-in-out infinite;
 }
 
 .cta-icon-cloud span {
@@ -497,6 +545,13 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.76);
   box-shadow: var(--shadow-soft);
+  line-height: 0;
+}
+
+.cta-icon-cloud span svg {
+  display: block;
+  margin: 0;
+  color: var(--accent);
 }
 
 @keyframes scan-sweep {
@@ -509,6 +564,50 @@
   50% { transform: scale(1.06); opacity: 0.86; }
 }
 
+@keyframes soft-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes hero-title-load {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes panel-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
+}
+
+@keyframes card-breathe {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -5px; }
+}
+
+@keyframes token-drift {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -7px; }
+}
+
+@keyframes icon-bob {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4px; }
+}
+
+@keyframes card-sheen {
+  0%, 100% { opacity: 0.56; transform: translate3d(0, 0, 0); }
+  50% { opacity: 0.92; transform: translate3d(10px, 6px, 0); }
+}
+
+@keyframes connector-flow {
+  0%, 100% { transform: scaleX(0.78); opacity: 0.58; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes meter-glide {
+  0%, 100% { transform: scaleX(0.94); }
+  50% { transform: scaleX(1); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .hero-orbit,
@@ -521,7 +620,18 @@
   .workflow-visual i,
   .feature-meter span,
   .gmail-mock,
+  .cta-icon-cloud,
   .cta-icon-cloud span,
+  .hero-eyebrow,
+  .hero-content h1,
+  .hero-content p,
+  .hero-proof-strip span,
+  .hero-actions > *,
+  .workflow-node::before,
+  .feature-card::before,
+  .workflow-node .premium-icon,
+  .feature-card .premium-icon,
+  .final-cta-section > div > svg,
   .hero-content h1 span {
     animation: none;
   }
