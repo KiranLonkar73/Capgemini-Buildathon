@@ -26,7 +26,7 @@ export async function analyzeUploadedDocument(file: File, threshold: number) {
 export async function uploadPolicyDocument(file: File) {
   const body = new FormData();
   body.append("file", file);
-  body.append("policy_name", file.name.replace(/\.(pdf|docx|txt)$/i, ""));
+  body.append("policy_name", file.name.replace(/\.(pdf|doc|docx|eml|html|htm|md|rtf|txt)$/i, ""));
   const response = await fetch(`${API_BASE_URL}/upload-policy`, { method: "POST", body });
   if (!response.ok) throw new Error(await response.text());
   return (await response.json()) as { uploaded: boolean; chunks: number };

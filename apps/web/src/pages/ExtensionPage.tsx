@@ -1,4 +1,4 @@
-import { CheckCircle2, MailCheck, MessageSquareText, Search, ShieldCheck, Wand2 } from "lucide-react";
+import { CheckCircle2, MailCheck, MessageSquareText, Search, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { extensionSignals } from "../data/productData";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
@@ -24,10 +24,13 @@ export function ExtensionPage() {
             </p>
             <div className="workflow-steps compact">
               <div className="workflow-step">
-                <MailCheck size={16} /> Detect compose
+                <Sparkles size={16} /> Show FAB
               </div>
               <div className="workflow-step">
                 <Search size={16} /> Scan draft
+              </div>
+              <div className="workflow-step">
+                <MessageSquareText size={16} /> Show tooltip
               </div>
               <div className="workflow-step">
                 <Wand2 size={16} /> Insert rewrite
@@ -36,9 +39,9 @@ export function ExtensionPage() {
           </div>
           <div className="extension-preview">
             <strong>ComplyLens Gmail</strong>
-            <span className="risk-pill">Medium risk</span>
-            <p>Commercial Communications Policy</p>
-            <small>Written guarantees require legal approval.</small>
+            <span className="risk-pill">Small FAB in compose</span>
+            <p>Tooltip next to flagged text</p>
+            <small>Policy reference, why it matters, and rewrite stay in one compact overlay.</small>
             <button type="button">Apply rewrite</button>
           </div>
         </div>

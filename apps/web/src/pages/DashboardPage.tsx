@@ -124,7 +124,7 @@ export function DashboardPage() {
         <div className="work-steps" aria-label="How to use">
           {[
             ["1", "Write or upload"],
-            ["2", "Press Check"],
+            ["2", "Review the compare view"],
             ["3", "Apply fixes"]
           ].map(([number, label]) => (
             <div key={number}>
@@ -151,14 +151,14 @@ export function DashboardPage() {
             <div className="document-card">
               <div className="document-toolbar">
                 <span>
-                  Paste text below or upload a file
+                  Paste text or upload PDF, DOC, DOCX, EML, HTML, MD, RTF, or TXT
                 </span>
                 <div>
                   <button onClick={pasteText} type="button">Demo</button>
                   <button onClick={() => fileRef.current?.click()} type="button">Upload</button>
                   <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Checking..." : "Check"}</button>
                 </div>
-                <input accept=".txt,.pdf,.docx" hidden onChange={uploadDocument} ref={fileRef} type="file" />
+                <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
               </div>
               <HighlightedEditor draft={draft} onChange={setDraft} onSelectViolation={setActiveId} violations={visibleViolations} />
             </div>

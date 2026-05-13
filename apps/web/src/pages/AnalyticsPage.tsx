@@ -1,6 +1,6 @@
 import { BarChart3 } from "lucide-react";
 import { PanelTitle } from "../components/common/PanelTitle";
-import { dashboardMetrics, riskHeatmap, teamAnalytics, trendPoints } from "../data/productData";
+import { dashboardMetrics, policyViolationShare, riskHeatmap, teamAnalytics, trendPoints } from "../data/productData";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 
 export function AnalyticsPage() {
@@ -43,6 +43,19 @@ export function AnalyticsPage() {
             <PanelTitle label="Compliance trends" title="Risk reduction over time" />
             <div className="trend-chart">
               {trendPoints.map((point, index) => <i key={`${point}-${index}`} style={{ height: `${point}%` }} />)}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <PanelTitle label="Most common policy hits" title="What gets violated most often" />
+            <div className="heatmap-list">
+              {policyViolationShare.map(([label, value, tone]) => (
+                <div className={`heatmap-row tone-${tone}`} key={label}>
+                  <span>{label}</span>
+                  <div><i style={{ width: `${value}%` }} /></div>
+                  <strong>{value}%</strong>
+                </div>
+              ))}
             </div>
           </section>
 

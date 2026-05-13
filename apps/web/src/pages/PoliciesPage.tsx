@@ -58,9 +58,9 @@ export function PoliciesPage() {
               <Upload size={22} />
               <span>
                 <strong>{uploading ? "Uploading policy..." : "Upload policy document"}</strong>
-                <small>PDF, DOCX, and TXT are parsed by the FastAPI backend.</small>
+                <small>PDF, DOC, DOCX, EML, HTML, Markdown, RTF, and TXT are parsed by the backend.</small>
               </span>
-              <input accept=".pdf,.docx,.txt" disabled={uploading} onChange={uploadPolicy} type="file" />
+              <input accept=".pdf,.doc,.docx,.eml,.html,.htm,.md,.rtf,.txt" disabled={uploading} onChange={uploadPolicy} type="file" />
             </label>
             <div className="policy-table">
               {policyRows.map((policy) => (

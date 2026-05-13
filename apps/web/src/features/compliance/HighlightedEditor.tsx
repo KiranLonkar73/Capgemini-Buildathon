@@ -13,8 +13,8 @@ export function HighlightedEditor({
 }) {
   return (
     <div className="document-content">
-      <label className="editor-pane">
-        <span>Write here</span>
+      <label className="editor-pane editor-pane--input">
+        <span>Write or paste</span>
         <textarea
           aria-label="Document draft"
           className="document-textarea"
@@ -23,7 +23,7 @@ export function HighlightedEditor({
         />
       </label>
       <div className="editor-pane">
-        <span>Problems show here</span>
+        <span>Original document with highlights</span>
         <div className="highlight-preview">
           {draft.split(/\n\s*\n/).map((paragraph, index) => {
             const match = violations.find((violation) => paragraph.includes(violation.quote));

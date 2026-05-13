@@ -386,8 +386,8 @@
 
 .document-content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
   min-height: 0;
   padding: 16px;
   overflow: hidden;
@@ -398,6 +398,9 @@
   gap: 8px;
   min-height: 0;
 }
+.editor-pane--input {
+  min-height: 220px;
+}
 
 .editor-pane > span {
   color: var(--muted);
@@ -406,7 +409,7 @@
 }
 .document-textarea {
   width: 100%;
-  min-height: 0;
+  min-height: 220px;
   resize: none;
   padding: 18px;
   color: var(--text);
@@ -418,6 +421,7 @@
 }
 .highlight-preview {
   overflow: auto;
+  min-height: 0;
   padding: 18px;
   color: var(--text);
   border: 1px solid var(--line);
@@ -439,7 +443,7 @@
   text-align: inherit;
 }
 .inline-flag--critical, .inline-flag--high { color: #991b1b; background: rgba(254, 226, 226, 0.74); }
-.inline-flag--medium { color: #92400e; background: rgba(254, 243, 199, 0.8); }
+.inline-flag--medium { color: #92400e; background: rgba(251, 191, 36, 0.24); }
 .inline-flag--low { color: #047857; background: rgba(209, 250, 229, 0.72); }
 
 .score-card,
@@ -527,8 +531,11 @@
 .citation-box { border-color: rgba(79, 70, 229, 0.18); background: rgba(238, 242, 255, 0.74); }
 .citation-box strong, .citation-box span { display: block; }
 .citation-box span { margin-top: 5px; color: var(--muted); }
-.rewrite-box { align-items: flex-start; gap: 10px; color: #047857; }
+.rewrite-box { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: flex-start; gap: 10px; color: #047857; }
 .rewrite-box svg { flex: 0 0 auto; margin-top: 2px; color: var(--success); }
+.rewrite-box strong,
+.rewrite-box span { display: block; }
+.rewrite-box strong { margin-bottom: 4px; }
 .apply-button { flex: 1; min-height: 38px; padding: 0 14px !important; border-color: rgba(79, 70, 229, 0.24) !important; background: rgba(238, 242, 255, 0.9) !important; color: var(--accent) !important; }
 .apply-button span { padding: 0 !important; font-weight: 780 !important; }
 .assistant-actions { gap: 8px; margin-top: 10px; flex-wrap: wrap; }

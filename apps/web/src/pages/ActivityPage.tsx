@@ -49,7 +49,7 @@ export function ActivityPage() {
               <Upload size={18} />
               <span>
                 <strong>Manage policies</strong>
-                <small>Upload company PDF, DOCX, TXT policy docs</small>
+                <small>Upload company PDF, DOC, DOCX, EML, HTML, MD, RTF, or TXT policy docs</small>
               </span>
             </Link>
             <div className="policy-list compact">

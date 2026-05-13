@@ -84,6 +84,13 @@ export const riskHeatmap = [
   ["Vendor", 45, "success"]
 ];
 
+export const policyViolationShare = [
+  ["Customer Data Handling", 34, "critical"],
+  ["Commercial Communications", 28, "warning"],
+  ["Forward-Looking Statements", 22, "warning"],
+  ["HR Confidentiality", 16, "success"]
+];
+
 export const activityFeed = [
   { title: "Gmail draft blocked", detail: "Refund guarantee detected in Enterprise Sales queue", time: "2m ago", tone: "critical" },
   { title: "Policy context retrieved", detail: "Customer Data Handling Standard matched 4 passages", time: "7m ago", tone: "accent" },
