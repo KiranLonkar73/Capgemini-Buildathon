@@ -269,6 +269,15 @@
   .workspace-command-status {
     justify-content: flex-start;
   }
+  .analysis-workbench {
+    order: 1;
+  }
+  .session-rail {
+    order: 2;
+  }
+  .findings-sidebar {
+    order: 3;
+  }
   .workflow-row {
     grid-template-columns: 36px minmax(0, 1fr);
   }

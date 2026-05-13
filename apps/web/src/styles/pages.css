@@ -137,6 +137,13 @@
   gap: 12px;
   margin-top: 18px;
 }
+.integration-grid {
+  align-items: stretch;
+}
+.extension-ops-grid .signal-card,
+.integration-grid .signal-card {
+  height: 100%;
+}
 .gmail-flow {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

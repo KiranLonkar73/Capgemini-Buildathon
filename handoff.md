@@ -42,6 +42,13 @@
   - `Policies` now reads as policy infrastructure with indexing status, chunk counts, coverage areas, retrieval health, and upload flow.
   - `Integrations` now includes extension setup plus API key, webhook, and SDK/API modules.
   - `Profile` now captures organization identity, policy model, compliance threshold, review owner, and retrieval configuration.
+- Completed global alignment pass after the sidebar/workspace IA rebuild:
+  - Fixed integration/API signal cards that were collapsing into single-line concatenated text.
+  - Widened the active workspace center column by tightening session and intelligence rail widths.
+  - Prevented toolbar buttons from wrapping awkwardly in the comparison panel.
+  - Normalized signal-card padding, icon alignment, and text hierarchy across integration/status modules.
+  - Reordered mobile workspace content so the active review/input appears before the session list.
+  - Browser checked dashboard desktop/mobile and integrations desktop after CSS fixes.
 - Simplified filler copy across the app and made utility more explicit:
   - Removed decorative/filler strips from `Work`.
   - Tightened `Reports` and `Policies` copy to emphasize actual user value.
@@ -207,6 +214,12 @@
   - `npm run build:extension` passes.
   - Browser checked `/dashboard`, `/inbox`, and `/integrations` at desktop size.
   - Browser checked `/dashboard` at mobile size.
+- Alignment pass verification:
+  - `npm run typecheck` passes.
+  - `npm run build:web` passes.
+  - Browser checked `/dashboard` desktop.
+  - Browser checked `/dashboard` mobile after reordering the workspace stack.
+  - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:
   - `npm run typecheck` passes.
   - `npm run build:web` passes.
