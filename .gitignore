@@ -12,3 +12,11 @@ packages/**/*.js
 packages/**/*.d.ts
 packages/**/*.d.ts.map
 apps/**/*.d.ts.map
+# Ignore virtual environments
+.venv/
+venv/
+env/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
