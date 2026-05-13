@@ -8,7 +8,8 @@
   .hero-visual { min-height: 500px; }
   .workflow-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .dashboard-command,
-  .dashboard-focus-strip {
+  .dashboard-focus-strip,
+  .work-grid {
     grid-template-columns: 1fr;
   }
   .ops-grid { grid-template-columns: 1fr; }
@@ -31,14 +32,16 @@
   .findings-sidebar { grid-template-columns: 1fr; }
   .ops-card.wide { grid-column: span 1; }
   .workflow-map,
-  .feature-rail {
+  .feature-rail,
+  .work-steps,
+  .dashboard-feature-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 680px) {
   .workspace-shell {
-    grid-template-rows: auto minmax(0, 1fr) 44px;
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .site-nav,
   .workspace-nav {
@@ -207,6 +210,21 @@
   .dashboard-focus-strip article,
   .metric-card {
     min-height: 0;
+  }
+  .work-topbar,
+  .simple-page-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .work-actions {
+    width: 100%;
+  }
+  .work-actions button {
+    flex: 1;
+  }
+  .work-steps,
+  .dashboard-feature-nav {
+    grid-template-columns: 1fr;
   }
   .cta-footer,
   .dashboard-command,

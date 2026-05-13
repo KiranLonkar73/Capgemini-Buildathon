@@ -1,17 +1,14 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { ArrowRight, BarChart3, FileText, MailCheck, Shield, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { FileText, Play, Upload } from "lucide-react";
 import {
   applyRewrite,
   demoDocument,
   runDemoComplianceCheck,
-  samplePolicies,
   type ComplianceReport,
   type Violation
 } from "@complylens/shared";
 import { analyzeDocument, analyzeUploadedDocument } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
-import { PanelTitle } from "../components/common/PanelTitle";
 import { FindingsPanel } from "../features/compliance/FindingsPanel";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
@@ -101,72 +98,65 @@ export function DashboardPage() {
 
   return (
     <WorkspaceShell>
-      <section className="ops-dashboard">
-        <div className="dashboard-command">
-          <div className="command-copy">
-            <span className="eyebrow">Review workspace</span>
-            <h1>Analyze one document clearly, then move deeper when needed.</h1>
-            <p>Run policy checks, inspect findings, and apply rewrites without mixing analytics, audit feeds, and setup controls into the same surface.</p>
+      <section className="ops-dashboard work-dashboard">
+        <div className="work-topbar">
+          <div>
+            <span className="eyebrow">Work</span>
+            <h1>Check a message or document.</h1>
+            <p>Write, upload, scan, then fix the highlighted text.</p>
           </div>
-          <div className="command-side">
-            <div className="command-status">
-              <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
-              {loading ? "AI scan running" : report.source === "backend" ? "Backend connected" : "Seeded demo mode"}
-            </div>
-            <div className="command-mini-grid">
-              <span><Sparkles size={15} /> {visibleViolations.length || report.flaggedSections} findings in review</span>
-              <span><MailCheck size={15} /> Gmail-ready workflow</span>
-            </div>
+          <div className="work-actions">
+            <button onClick={pasteText} type="button">
+              <FileText size={16} />
+              Try demo
+            </button>
+            <button onClick={() => fileRef.current?.click()} type="button">
+              <Upload size={16} />
+              Upload
+            </button>
+            <button className="primary-work-action" disabled={loading} onClick={() => void analyze()} type="button">
+              <Play size={16} />
+              {loading ? "Checking..." : "Check"}
+            </button>
           </div>
         </div>
 
-        <div className="dashboard-feature-nav" aria-label="Special feature areas">
-          <Link to="/analytics">
-            <BarChart3 size={18} />
-            <span>
-              <strong>Analytics</strong>
-              <small>Scores, trends, heatmaps, team coverage</small>
-            </span>
-            <ArrowRight size={16} />
-          </Link>
-          <Link to="/activity">
-            <Sparkles size={18} />
-            <span>
-              <strong>AI Ops</strong>
-              <small>Insights, audit history, active rulebase</small>
-            </span>
-            <ArrowRight size={16} />
-          </Link>
-          <Link to="/policies">
-            <Shield size={18} />
-            <span>
-              <strong>Policies</strong>
-              <small>Manage uploaded company rules</small>
-            </span>
-            <ArrowRight size={16} />
-          </Link>
+        <div className="work-steps" aria-label="How to use">
+          {[
+            ["1", "Write or upload"],
+            ["2", "Press Check"],
+            ["3", "Apply fixes"]
+          ].map(([number, label]) => (
+            <div key={number}>
+              <strong>{number}</strong>
+              <span>{label}</span>
+            </div>
+          ))}
         </div>
 
-        <div className="ops-grid">
+        {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
+
+        <div className="work-grid">
           <section className="analysis-workbench">
-            <div className="review-header">
-              <PanelTitle label="Document review" title="Outbound vendor email" />
+            <div className="review-header compact-review-header">
+              <span>
+                <FileText size={16} />
+                {documentName}
+              </span>
               <div className="scan-state">
                 <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
-                {loading ? "Scanning policies" : `${report.flaggedSections} findings`}
+                {loading ? "Checking" : `${visibleViolations.length} issues`}
               </div>
             </div>
-            {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
             <div className="document-card">
               <div className="document-toolbar">
                 <span>
-                  <FileText size={15} />
-                  {documentName}
+                  Paste text below or upload a file
                 </span>
                 <div>
-                  <button onClick={pasteText} type="button">Paste demo</button>
-                  <button onClick={() => fileRef.current?.click()} type="button">Upload file</button>
-                  <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Running..." : "Run analysis"}</button>
+                  <button onClick={pasteText} type="button">Demo</button>
+                  <button onClick={() => fileRef.current?.click()} type="button">Upload</button>
+                  <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Checking..." : "Check"}</button>
                 </div>
                 <input accept=".txt,.pdf,.docx" hidden onChange={uploadDocument} ref={fileRef} type="file" />
               </div>

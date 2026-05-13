@@ -1,5 +1,5 @@
 import { ChangeEvent, useState } from "react";
-import { Database, FileSearch, ShieldCheck, Upload } from "lucide-react";
+import { FileSearch, ShieldCheck, Upload } from "lucide-react";
 import { samplePolicies } from "@complylens/shared";
 import { uploadPolicyDocument } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
@@ -43,14 +43,13 @@ export function PoliciesPage() {
 
   return (
     <WorkspaceShell>
-      <section className="page-panel">
-        <div className="page-hero">
+      <section className="page-panel simple-dashboard">
+        <div className="simple-page-head">
+          <span className="premium-icon"><ShieldCheck size={18} /></span>
           <div>
-            <span className="eyebrow">Policy intelligence center</span>
-            <h1>Company policy memory built for explainable AI review.</h1>
-            <p>Upload source policies, inspect coverage, and manage the rule systems used across Gmail and document workflows.</p>
+            <h1>Policies</h1>
+            <p>Upload the rules the checker should use.</p>
           </div>
-          <div className="page-hero-metric"><Database size={18} /><strong>829</strong><span>indexed passages</span></div>
         </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
         <div className="policy-console">

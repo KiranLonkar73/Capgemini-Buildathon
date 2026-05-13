@@ -43,9 +43,9 @@ export function FindingsPanel({
           </span>
         </div>
         <div>
-          <span>Compliance score</span>
-          <h2>{report.status === "blocked" ? "Needs review" : report.status === "review" ? "Review advised" : "Ready"}</h2>
-          <p>{report.summary ?? `${report.flaggedSections} findings require action.`}</p>
+          <span>Result</span>
+          <h2>{report.status === "blocked" ? "Needs fixes" : report.status === "review" ? "Check this" : "Looks good"}</h2>
+          <p>{report.summary ?? `${report.flaggedSections} things may need fixing.`}</p>
         </div>
       </section>
       <section className="findings-card">
@@ -69,7 +69,7 @@ export function FindingsPanel({
             />
           </label>
         </div>
-        <PanelTitle label="AI findings" title={`${violations.length} visible violations`} />
+        <PanelTitle label="Problems" title={`${violations.length} things to check`} />
         <div className="finding-list">
           {loading && (
             <div className="empty-state">
@@ -78,7 +78,7 @@ export function FindingsPanel({
           )}
           {!loading && violations.length === 0 && (
             <div className="empty-state">
-              <CheckCircle2 size={16} /> No visible violations. {hiddenCount ? `${hiddenCount} hidden.` : ""}
+              <CheckCircle2 size={16} /> No problems showing. {hiddenCount ? `${hiddenCount} hidden.` : ""}
             </div>
           )}
           {violations.map((violation) => (
@@ -101,7 +101,7 @@ export function FindingsPanel({
       </section>
       {activeViolation && (
         <motion.section animate={{ opacity: 1, y: 0 }} className="assistant-card" initial={{ opacity: 0, y: 8 }} key={activeViolation.id}>
-          <PanelTitle label="Why this was flagged" title={activeViolation.policyName} />
+          <PanelTitle label="Why" title={activeViolation.policyName} />
           <p>{activeViolation.explanation}</p>
           <blockquote>{activeViolation.quote}</blockquote>
           <div className="citation-box">
@@ -114,7 +114,7 @@ export function FindingsPanel({
           </div>
           <div className="assistant-actions">
             <AnimatedButton className="apply-button" onClick={() => onApply(activeViolation)} type="button">
-              Apply rewrite
+              Use this fix
             </AnimatedButton>
             <button onClick={() => onMarkSafe(activeViolation.id)} type="button">
               Mark safe

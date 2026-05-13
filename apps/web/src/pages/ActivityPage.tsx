@@ -8,22 +8,12 @@ import { WorkspaceShell } from "../layouts/WorkspaceShell";
 export function ActivityPage() {
   return (
     <WorkspaceShell>
-      <section className="ops-dashboard">
-        <div className="dashboard-command dashboard-command--compact">
-          <div className="command-copy">
-            <span className="eyebrow">AI operations</span>
-            <h1>Insights, activity, and policy context in one place.</h1>
-            <p>Keep operational signals away from the scanner so reviewers can focus while ops teams still have traceability.</p>
-          </div>
-          <div className="command-side">
-            <div className="command-status">
-              <span className="pulse-dot idle" />
-              Audit ready
-            </div>
-            <div className="command-mini-grid">
-              <span><Bot size={15} /> {aiInsights.length} priority insights</span>
-              <span><Activity size={15} /> {activityFeed.length} recent events</span>
-            </div>
+      <section className="ops-dashboard simple-dashboard">
+        <div className="simple-page-head">
+          <span className="premium-icon"><Activity size={18} /></span>
+          <div>
+            <h1>Activity</h1>
+            <p>What happened, what changed, and what the AI noticed.</p>
           </div>
         </div>
 

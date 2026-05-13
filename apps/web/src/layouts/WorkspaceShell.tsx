@@ -1,14 +1,12 @@
-import { Activity, ArrowRight, BarChart3, Gauge, MailCheck, Settings, Shield, ShieldCheck, Sparkles } from "lucide-react";
+import { Activity, BarChart3, FileText, Shield } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { Brand } from "../components/common/Brand";
 
 const workspaceLinks = [
-  { to: "/dashboard", label: "Review", icon: Gauge },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/activity", label: "AI Ops", icon: Activity },
-  { to: "/policies", label: "Policies", icon: Shield },
-  { to: "/extension", label: "Extension", icon: MailCheck },
-  { to: "/settings", label: "Settings", icon: Settings }
+  { to: "/dashboard", label: "Work", icon: FileText },
+  { to: "/analytics", label: "Reports", icon: BarChart3 },
+  { to: "/activity", label: "Activity", icon: Activity },
+  { to: "/policies", label: "Policies", icon: Shield }
 ];
 
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
@@ -30,23 +28,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           <Link className="ghost" to="/">
             Home
           </Link>
-          <Link className="primary-action" to="/dashboard">
-            Analyze <ArrowRight size={16} />
-          </Link>
         </div>
       </header>
       {children}
-      <footer className="status-bar">
-        <div>
-          <Sparkles size={15} /> Explainable AI outputs
-        </div>
-        <div>
-          <ShieldCheck size={15} /> Company policy retrieval
-        </div>
-        <div>
-          <MailCheck size={15} /> Gmail extension compatible
-        </div>
-      </footer>
     </main>
   );
 }
