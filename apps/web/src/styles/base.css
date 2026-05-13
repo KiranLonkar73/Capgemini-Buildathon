@@ -60,7 +60,7 @@ a { color: inherit; }
   padding: 0 28px;
   border-bottom: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(22px);
+  backdrop-filter: blur(14px);
   top: 0;
   z-index: 20;
   overflow: hidden;
@@ -77,10 +77,10 @@ a { color: inherit; }
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle 190px at var(--nav-cursor-x, 50%) var(--nav-cursor-y, 50%), rgba(96, 165, 250, 0.2), transparent 68%),
+    radial-gradient(circle 150px at var(--nav-cursor-x, 50%) var(--nav-cursor-y, 50%), rgba(96, 165, 250, 0.16), transparent 68%),
     linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
   opacity: 0.8;
-  transition: opacity 180ms ease;
+  contain: paint;
 }
 
 .site-nav nav,

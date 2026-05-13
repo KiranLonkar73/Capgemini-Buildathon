@@ -1,4 +1,4 @@
-import { type CSSProperties, useState } from "react";
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -20,7 +20,7 @@ import { homepageFeatures, workflowSteps } from "../data/productData";
 import { TopNav } from "../layouts/TopNav";
 
 export function LandingPage() {
-  const [spotlight, setSpotlight] = useState({ x: 50, y: 50 });
+  const frameRef = useRef<number>();
 
   return (
     <main className="site-shell">
@@ -28,14 +28,18 @@ export function LandingPage() {
       <section
         className="hero-section"
         onMouseMove={(event) => {
+          if (frameRef.current) {
+            cancelAnimationFrame(frameRef.current);
+          }
           const bounds = event.currentTarget.getBoundingClientRect();
-          setSpotlight({
-            x: ((event.clientX - bounds.left) / bounds.width) * 100,
-            y: ((event.clientY - bounds.top) / bounds.height) * 100
+          const target = event.currentTarget;
+          const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+          const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+          frameRef.current = requestAnimationFrame(() => {
+            target.style.setProperty("--cursor-x", `${x}%`);
+            target.style.setProperty("--cursor-y", `${y}%`);
           });
         }}
-        onMouseLeave={() => setSpotlight({ x: 50, y: 62 })}
-        style={{ "--cursor-x": `${spotlight.x}%`, "--cursor-y": `${spotlight.y}%` } as CSSProperties}
       >
         <div className="cursor-spotlight" aria-hidden="true" />
         <div className="hero-orbit" aria-hidden="true" />

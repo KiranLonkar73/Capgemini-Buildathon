@@ -1,22 +1,27 @@
-import { type CSSProperties, useState } from "react";
+import { useRef } from "react";
 import { ArrowRight, LogIn, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Brand } from "../components/common/Brand";
 
 export function TopNav({ compact = false }: { compact?: boolean }) {
-  const [cursor, setCursor] = useState({ x: 50, y: 50 });
+  const frameRef = useRef<number>();
 
   return (
     <header
       className="site-nav"
       onMouseMove={(event) => {
+        if (frameRef.current) {
+          cancelAnimationFrame(frameRef.current);
+        }
         const bounds = event.currentTarget.getBoundingClientRect();
-        setCursor({
-          x: ((event.clientX - bounds.left) / bounds.width) * 100,
-          y: ((event.clientY - bounds.top) / bounds.height) * 100
+        const target = event.currentTarget;
+        const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+        const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+        frameRef.current = requestAnimationFrame(() => {
+          target.style.setProperty("--nav-cursor-x", `${x}%`);
+          target.style.setProperty("--nav-cursor-y", `${y}%`);
         });
       }}
-      style={{ "--nav-cursor-x": `${cursor.x}%`, "--nav-cursor-y": `${cursor.y}%` } as CSSProperties}
     >
       <span className="nav-cursor-glow" aria-hidden="true" />
       <Link className="brand-link" to="/">
