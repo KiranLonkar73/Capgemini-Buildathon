@@ -2,29 +2,33 @@ import type { Violation } from "@complylens/shared";
 
 export function HighlightedEditor({
   draft,
-  onChange,
   onSelectViolation,
-  violations
+  violations,
+  mode = "full",
+  onChange
 }: {
   draft: string;
-  onChange: (draft: string) => void;
+  onChange?: (draft: string) => void;
   onSelectViolation: (id: string) => void;
   violations: Violation[];
+  mode?: "full" | "preview";
 }) {
   return (
     <div className="document-content">
-      <label className="editor-pane editor-pane--input">
-        <span>Draft</span>
-        <textarea
-          aria-label="Document draft"
-          className="document-textarea"
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="Type a message, paste a document, or attach a file."
-          value={draft}
-        />
-      </label>
+      {mode === "full" && onChange && (
+        <label className="editor-pane editor-pane--input">
+          <span>Draft</span>
+          <textarea
+            aria-label="Document draft"
+            className="document-textarea"
+            onChange={(event) => onChange(event.target.value)}
+            placeholder="Type a message, paste a document, or attach a file."
+            value={draft}
+          />
+        </label>
+      )}
       <div className="editor-pane">
-        <span>Comparison</span>
+        <span>{mode === "preview" ? "Original text with highlights" : "Comparison"}</span>
         <div className="highlight-preview">
           {draft.split(/\n\s*\n/).map((paragraph, index) => {
             const match = violations.find((violation) => paragraph.includes(violation.quote));

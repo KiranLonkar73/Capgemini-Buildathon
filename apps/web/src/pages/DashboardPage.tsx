@@ -162,6 +162,19 @@ export function DashboardPage() {
                   </span>
                   <span>{draft.trim().split(/\s+/).filter(Boolean).length} words</span>
                 </div>
+                <textarea
+                  aria-label="Write message or document"
+                  className="composer-textarea"
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                      event.preventDefault();
+                      void analyze();
+                    }
+                  }}
+                  placeholder="Type your message here, paste a document, or attach a file."
+                  value={draft}
+                />
                 <div className="composer-actions">
                   <button aria-label="Upload file" className="icon-action-button" onClick={() => fileRef.current?.click()} type="button">
                     <Paperclip size={16} />
@@ -178,7 +191,7 @@ export function DashboardPage() {
             <div className="document-card">
               <div className="document-toolbar">
                 <span>
-                  Add text or upload PDF, DOC, DOCX, EML, HTML, MD, RTF, or TXT
+                  Compare the original text with highlighted issues
                 </span>
                 <div>
                   <button aria-label="Upload file" className="icon-action-button" onClick={() => fileRef.current?.click()} type="button">
@@ -188,7 +201,7 @@ export function DashboardPage() {
                 </div>
                 <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
               </div>
-              <HighlightedEditor draft={draft} onChange={setDraft} onSelectViolation={setActiveId} violations={visibleViolations} />
+              <HighlightedEditor draft={draft} mode="preview" onSelectViolation={setActiveId} violations={visibleViolations} />
             </div>
           </section>
 
