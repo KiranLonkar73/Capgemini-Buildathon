@@ -1,5 +1,6 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { Activity, BarChart3, Bot, DatabaseZap, FileText, MailCheck, Network, ShieldCheck, Upload } from "lucide-react";
+import { ArrowRight, BarChart3, FileText, MailCheck, Shield, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   applyRewrite,
   demoDocument,
@@ -14,15 +15,6 @@ import { PanelTitle } from "../components/common/PanelTitle";
 import { FindingsPanel } from "../features/compliance/FindingsPanel";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
-import {
-  activityFeed,
-  aiInsights,
-  dashboardMetrics,
-  policySystems,
-  riskHeatmap,
-  teamAnalytics,
-  trendPoints
-} from "../data/productData";
 import type { Notice } from "../types";
 
 export function DashboardPage() {
@@ -112,9 +104,9 @@ export function DashboardPage() {
       <section className="ops-dashboard">
         <div className="dashboard-command">
           <div className="command-copy">
-            <span className="eyebrow">Compliance operations command center</span>
-            <h1>Live policy intelligence across enterprise communication.</h1>
-            <p>Monitor active scans, policy systems, rewrite activity, and high-confidence risk signals in one operating surface.</p>
+            <span className="eyebrow">Review workspace</span>
+            <h1>Analyze one document clearly, then move deeper when needed.</h1>
+            <p>Run policy checks, inspect findings, and apply rewrites without mixing analytics, audit feeds, and setup controls into the same surface.</p>
           </div>
           <div className="command-side">
             <div className="command-status">
@@ -122,44 +114,37 @@ export function DashboardPage() {
               {loading ? "AI scan running" : report.source === "backend" ? "Backend connected" : "Seeded demo mode"}
             </div>
             <div className="command-mini-grid">
-              <span><DatabaseZap size={15} /> {policySystems.length} active policy sets</span>
+              <span><Sparkles size={15} /> {visibleViolations.length || report.flaggedSections} findings in review</span>
               <span><MailCheck size={15} /> Gmail-ready workflow</span>
             </div>
           </div>
         </div>
 
-        <div className="metric-grid">
-          {dashboardMetrics.map((metric) => (
-            <article className={`metric-card tone-${metric.tone}`} key={metric.label}>
-              <span>{metric.label}</span>
-              <strong>{metric.value}<small>{metric.suffix}</small></strong>
-              <em>{metric.delta}</em>
-            </article>
-          ))}
-        </div>
-
-        <div className="dashboard-focus-strip" aria-label="Operational focus areas">
-          <article>
-            <span className="premium-icon"><Network size={18} /></span>
-            <div>
-              <strong>Policy memory online</strong>
-              <p>{policySystems[0].coverage}% coverage across customer data and commercial communication controls.</p>
-            </div>
-          </article>
-          <article>
-            <span className="premium-icon"><Bot size={18} /></span>
-            <div>
-              <strong>{visibleViolations.length || report.flaggedSections} findings in review</strong>
-              <p>Threshold set to {Math.round(threshold * 100)}%; dismissed findings stay auditable.</p>
-            </div>
-          </article>
-          <article>
-            <span className="premium-icon"><BarChart3 size={18} /></span>
-            <div>
-              <strong>Risk trend improving</strong>
-              <p>Rewrite-assisted teams are resolving high-risk language before escalation.</p>
-            </div>
-          </article>
+        <div className="dashboard-feature-nav" aria-label="Special feature areas">
+          <Link to="/analytics">
+            <BarChart3 size={18} />
+            <span>
+              <strong>Analytics</strong>
+              <small>Scores, trends, heatmaps, team coverage</small>
+            </span>
+            <ArrowRight size={16} />
+          </Link>
+          <Link to="/activity">
+            <Sparkles size={18} />
+            <span>
+              <strong>AI Ops</strong>
+              <small>Insights, audit history, active rulebase</small>
+            </span>
+            <ArrowRight size={16} />
+          </Link>
+          <Link to="/policies">
+            <Shield size={18} />
+            <span>
+              <strong>Policies</strong>
+              <small>Manage uploaded company rules</small>
+            </span>
+            <ArrowRight size={16} />
+          </Link>
         </div>
 
         <div className="ops-grid">
@@ -204,98 +189,6 @@ export function DashboardPage() {
             threshold={threshold}
             violations={visibleViolations}
           />
-        </div>
-
-        <div className="intelligence-grid">
-          <section className="ops-card">
-            <PanelTitle label="Live risk monitoring" title="Risk heatmap" />
-            <div className="heatmap-list">
-              {riskHeatmap.map(([label, value, tone]) => (
-                <div className={`heatmap-row tone-${tone}`} key={label}>
-                  <span>{label}</span>
-                  <div><i style={{ width: `${value}%` }} /></div>
-                  <strong>{value}%</strong>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="ops-card">
-            <PanelTitle label="Compliance trends" title="Risk reduction over time" />
-            <div className="trend-chart">
-              {trendPoints.map((point, index) => <i key={`${point}-${index}`} style={{ height: `${point}%` }} />)}
-            </div>
-          </section>
-
-          <section className="ops-card">
-            <PanelTitle label="AI insights feed" title="Priority observations" />
-            <div className="insight-list">
-              {aiInsights.map((insight) => (
-                <div key={insight}><Bot size={16} />{insight}</div>
-              ))}
-            </div>
-          </section>
-
-          <section className="ops-card wide">
-            <PanelTitle label="Enterprise communication activity" title="Audit and workflow history" />
-            <div className="activity-feed">
-              {activityFeed.map((activity) => (
-                <article className={`activity-item tone-${activity.tone}`} key={activity.title}>
-                  <Activity size={16} />
-                  <div>
-                    <strong>{activity.title}</strong>
-                    <span>{activity.detail}</span>
-                  </div>
-                  <time>{activity.time}</time>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="ops-card">
-            <PanelTitle label="Policy intelligence center" title="Active rulebase" />
-            <a className="upload-card" href="/policies">
-              <Upload size={18} />
-              <span>
-                <strong>Manage policies</strong>
-                <small>Upload company PDF, DOCX, TXT policy docs</small>
-              </span>
-            </a>
-            <div className="policy-list compact">
-              {samplePolicies.map((policy) => (
-                <article className="policy-row" key={policy.id}>
-                  <span>{policy.owner}</span>
-                  <div>
-                    <strong>{policy.policy}</strong>
-                    <small>{policy.section}</small>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="ops-card team-policy-card">
-            <PanelTitle label="Teams and policy coverage" title="Where risk is concentrated" />
-            <div className="team-table">
-              {teamAnalytics.slice(0, 3).map((team) => (
-                <div key={team.team}>
-                  <span>{team.team}</span>
-                  <strong>{team.score}%</strong>
-                  <small>{team.scanned} scans · {team.risks} risks</small>
-                </div>
-              ))}
-            </div>
-            <div className="policy-system-list compact-systems">
-              {policySystems.slice(0, 2).map((policy) => (
-                <div key={policy.name}>
-                  <ShieldCheck size={16} />
-                  <span>{policy.name}</span>
-                  <strong>{policy.coverage}%</strong>
-                  <small>{policy.passages} passages · {policy.owner}</small>
-                </div>
-              ))}
-            </div>
-          </section>
         </div>
       </section>
     </WorkspaceShell>

@@ -1,9 +1,11 @@
-import { ArrowRight, Gauge, MailCheck, Settings, Shield, ShieldCheck, Sparkles } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, Gauge, MailCheck, Settings, Shield, ShieldCheck, Sparkles } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import { Brand } from "../components/common/Brand";
 
 const workspaceLinks = [
-  { to: "/dashboard", label: "Dashboard", icon: Gauge },
+  { to: "/dashboard", label: "Review", icon: Gauge },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/activity", label: "AI Ops", icon: Activity },
   { to: "/policies", label: "Policies", icon: Shield },
   { to: "/extension", label: "Extension", icon: MailCheck },
   { to: "/settings", label: "Settings", icon: Settings }
