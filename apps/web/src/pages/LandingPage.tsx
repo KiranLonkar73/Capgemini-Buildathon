@@ -41,9 +41,13 @@ export function LandingPage() {
           const target = event.currentTarget;
           const x = ((event.clientX - bounds.left) / bounds.width) * 100;
           const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+          const xPx = event.clientX - bounds.left;
+          const yPx = event.clientY - bounds.top;
           frameRef.current = requestAnimationFrame(() => {
             target.style.setProperty("--cursor-x", `${x}%`);
             target.style.setProperty("--cursor-y", `${y}%`);
+            target.style.setProperty("--cursor-x-px", `${xPx}px`);
+            target.style.setProperty("--cursor-y-px", `${yPx}px`);
           });
         }}
       >
