@@ -9,7 +9,6 @@
   .workflow-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .dashboard-command,
   .dashboard-focus-strip,
-  .work-value-strip,
   .work-grid {
     grid-template-columns: 1fr;
   }
@@ -28,7 +27,7 @@
   .auth-layout,
   .extension-showcase,
   .extension-install-steps,
-  .work-outcome-strip {
+  .thread-summary-grid {
     grid-template-columns: 1fr;
   }
   .codex-chat-head,
@@ -42,7 +41,6 @@
   .ops-card.wide { grid-column: span 1; }
   .workflow-map,
   .feature-rail,
-  .work-steps,
   .dashboard-feature-nav {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -231,10 +229,8 @@
   .work-actions button {
     flex: 1;
   }
-  .work-steps,
   .dashboard-feature-nav,
-  .work-value-strip,
-  .work-outcome-strip {
+  .thread-summary-grid {
     grid-template-columns: 1fr;
   }
   .cta-footer,

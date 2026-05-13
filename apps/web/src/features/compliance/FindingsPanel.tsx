@@ -69,7 +69,7 @@ export function FindingsPanel({
             />
           </label>
         </div>
-        <PanelTitle label="Compliance cards" title={`${violations.length} things to check`} />
+        <PanelTitle label="Results" title={`${violations.length} issue${violations.length === 1 ? "" : "s"}`} />
         <div className="finding-list">
           {loading && (
             <div className="empty-state">
@@ -101,7 +101,7 @@ export function FindingsPanel({
       </section>
       {activeViolation && (
         <motion.section animate={{ opacity: 1, y: 0 }} className="assistant-card" initial={{ opacity: 0, y: 8 }} key={activeViolation.id}>
-          <PanelTitle label="Why this matters" title={activeViolation.policyName} />
+          <PanelTitle label="Selected issue" title={activeViolation.policyName} />
           <p>{activeViolation.explanation}</p>
           <blockquote>{activeViolation.quote}</blockquote>
           <div className="citation-box">

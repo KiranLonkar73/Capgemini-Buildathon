@@ -9,7 +9,7 @@
 
 .work-dashboard {
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -51,97 +51,11 @@
   justify-content: flex-start;
 }
 
-.work-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.work-actions button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.78);
-  font-weight: 800;
-}
-
-.work-actions .primary-work-action {
-  color: #fff;
-  border-color: rgba(79, 70, 229, 0.26);
-  background: linear-gradient(135deg, #4f46e5, #6d5dfc);
-  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.2);
-}
-
-.work-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.work-steps div {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 46px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.work-steps strong {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  color: #fff;
-  background: var(--accent);
-  font-size: 0.78rem;
-}
-
-.work-steps span {
-  color: var(--secondary);
-  font-weight: 800;
-}
-
 .work-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
   gap: 14px;
   min-height: 0;
-}
-.work-value-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-.work-value-strip article {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-}
-.work-value-strip strong,
-.work-value-strip p {
-  display: block;
-  margin: 0;
-}
-.work-value-strip p {
-  margin-top: 4px;
-  color: var(--muted);
-  line-height: 1.45;
-  font-size: 0.84rem;
 }
 
 .dashboard-command {
@@ -438,6 +352,10 @@
   justify-self: end;
   background: rgba(248,250,252,.95);
 }
+.thread-bubble--assistant {
+  border-color: rgba(16, 185, 129, 0.18);
+  background: rgba(236,253,245,.72);
+}
 .thread-role {
   display: block;
   margin-bottom: 6px;
@@ -451,6 +369,30 @@
   margin: 0;
   color: var(--text);
   line-height: 1.55;
+}
+.thread-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.thread-summary-grid div {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.78);
+}
+.thread-summary-grid strong,
+.thread-summary-grid span {
+  display: block;
+}
+.thread-summary-grid strong {
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+}
+.thread-summary-grid span {
+  color: var(--secondary);
+  line-height: 1.45;
+  font-size: 0.82rem;
 }
 .codex-composer {
   display: grid;
@@ -477,6 +419,10 @@
   font-weight: 760;
 }
 .composer-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 36px;
   padding: 0 12px;
   border: 1px solid var(--line);
@@ -485,6 +431,17 @@
   color: var(--text);
   font-size: 0.8rem;
   font-weight: 760;
+}
+.icon-action-button {
+  width: 36px;
+  min-width: 36px;
+  padding: 0 !important;
+}
+.send-action-button {
+  color: #fff !important;
+  border-color: rgba(79, 70, 229, 0.26) !important;
+  background: linear-gradient(135deg, #4f46e5, #6d5dfc) !important;
+  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.16);
 }
 .document-toolbar {
   display: flex;
@@ -664,27 +621,6 @@
 .apply-button { flex: 1; min-height: 38px; padding: 0 14px !important; border-color: rgba(79, 70, 229, 0.24) !important; background: rgba(238, 242, 255, 0.9) !important; color: var(--accent) !important; }
 .apply-button span { padding: 0 !important; font-weight: 780 !important; }
 .assistant-actions { gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-.work-outcome-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-}
-.work-outcome-strip div {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: rgba(255,255,255,.72);
-  color: var(--secondary);
-  font-size: 0.82rem;
-  font-weight: 760;
-}
-.work-outcome-strip svg {
-  color: var(--accent);
-}
 
 .intelligence-grid {
   display: grid;

@@ -48,7 +48,7 @@ export function PoliciesPage() {
           <span className="premium-icon"><ShieldCheck size={18} /></span>
           <div>
             <h1>Policies</h1>
-            <p>Upload the rules the checker should use.</p>
+            <p>Upload the rules that power every scan and rewrite.</p>
           </div>
         </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}

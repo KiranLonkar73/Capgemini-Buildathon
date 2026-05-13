@@ -11,7 +11,7 @@ export function AnalyticsPage() {
           <span className="premium-icon"><BarChart3 size={18} /></span>
           <div>
             <h1>Reports</h1>
-            <p>Simple numbers about risk and team progress.</p>
+            <p>See what risk was prevented and which rules are breaking most often.</p>
           </div>
         </div>
 

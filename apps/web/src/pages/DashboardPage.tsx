@@ -1,5 +1,5 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { CheckCircle2, FileText, Play, ShieldCheck, Sparkles, Upload, Wand2 } from "lucide-react";
+import { ArrowUp, FileText, Paperclip } from "lucide-react";
 import {
   applyRewrite,
   demoDocument,
@@ -96,65 +96,18 @@ export function DashboardPage() {
     setNotice({ kind: "success", text: "Rewrite applied to the document draft." });
   }
 
-  const valuePoints = [
-    { icon: ShieldCheck, title: "See the risk", copy: "Find the exact line that can cause trouble." },
-    { icon: Sparkles, title: "Understand why", copy: "Read the rule and why it matters in simple words." },
-    { icon: Wand2, title: "Fix it fast", copy: "Use the rewrite instead of editing from scratch." }
-  ];
-
   return (
     <WorkspaceShell>
       <section className="ops-dashboard work-dashboard">
         <div className="work-topbar">
           <div>
             <span className="eyebrow">Work</span>
-            <h1>Your compliance workspace.</h1>
-            <p>Paste a draft or upload a file. ComplyLens finds risky lines and gives you a safer version.</p>
+            <h1>Review text like a chat.</h1>
+            <p>Type, attach a file, then get a clear compliance answer with fixes.</p>
           </div>
-          <div className="work-actions">
-            <button onClick={pasteText} type="button">
-              <FileText size={16} />
-              Try demo
-            </button>
-            <button onClick={() => fileRef.current?.click()} type="button">
-              <Upload size={16} />
-              Upload
-            </button>
-            <button className="primary-work-action" disabled={loading} onClick={() => void analyze()} type="button">
-              <Play size={16} />
-              {loading ? "Checking..." : "Check"}
-            </button>
-          </div>
-        </div>
-
-        <div className="work-steps" aria-label="How to use">
-          {[
-            ["1", "Add your draft"],
-            ["2", "Read the result"],
-            ["3", "Use the safe rewrite"]
-          ].map(([number, label]) => (
-            <div key={number}>
-              <strong>{number}</strong>
-              <span>{label}</span>
-            </div>
-          ))}
         </div>
 
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
-
-        <div className="work-value-strip" aria-label="Why this helps">
-          {valuePoints.map((item) => (
-            <article key={item.title}>
-              <span className="premium-icon">
-                <item.icon size={16} />
-              </span>
-              <div>
-                <strong>{item.title}</strong>
-                <p>{item.copy}</p>
-              </div>
-            </article>
-          ))}
-        </div>
 
         <div className="work-grid">
           <section className="analysis-workbench">
@@ -162,7 +115,7 @@ export function DashboardPage() {
               <div className="codex-chat-head">
                 <div>
                   <strong>ComplyLens chat</strong>
-                  <span>One place to write, upload, and review.</span>
+                  <span>Ask with text or file input.</span>
                 </div>
                 <div className="scan-state">
                   <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
@@ -173,11 +126,31 @@ export function DashboardPage() {
               <div className="codex-thread">
                 <article className="thread-bubble thread-bubble--system">
                   <span className="thread-role">ComplyLens</span>
-                  <p>I compare your draft against company policy, show risky text, and suggest safer wording.</p>
+                  <p>I check your draft against policy, point to the risky text, and suggest a safer rewrite.</p>
                 </article>
                 <article className="thread-bubble thread-bubble--user">
                   <span className="thread-role">You</span>
                   <p>{documentName}</p>
+                </article>
+                <article className="thread-bubble thread-bubble--assistant">
+                  <span className="thread-role">Result</span>
+                  <p>
+                    {activeViolation
+                      ? `I found ${visibleViolations.length} issue${visibleViolations.length === 1 ? "" : "s"}. The main risk is in ${activeViolation.policySection}.`
+                      : report.summary ?? "No risky language found."}
+                  </p>
+                  {activeViolation && (
+                    <div className="thread-summary-grid">
+                      <div>
+                        <strong>Why</strong>
+                        <span>{activeViolation.explanation}</span>
+                      </div>
+                      <div>
+                        <strong>Suggested rewrite</strong>
+                        <span>{activeViolation.rewrite}</span>
+                      </div>
+                    </div>
+                  )}
                 </article>
               </div>
 
@@ -190,11 +163,13 @@ export function DashboardPage() {
                   <span>{draft.trim().split(/\s+/).filter(Boolean).length} words</span>
                 </div>
                 <div className="composer-actions">
-                  <button onClick={pasteText} type="button">Demo draft</button>
-                  <button onClick={() => fileRef.current?.click()} type="button">Upload file</button>
-                  <button className="primary-work-action" disabled={loading} onClick={() => void analyze()} type="button">
-                    <Play size={16} />
-                    {loading ? "Checking..." : "Check draft"}
+                  <button aria-label="Upload file" className="icon-action-button" onClick={() => fileRef.current?.click()} type="button">
+                    <Paperclip size={16} />
+                  </button>
+                  <button onClick={pasteText} type="button">Use demo</button>
+                  <button className="primary-work-action send-action-button" disabled={loading} onClick={() => void analyze()} type="button">
+                    <ArrowUp size={16} />
+                    {loading ? "Checking..." : "Run check"}
                   </button>
                 </div>
               </div>
@@ -203,31 +178,17 @@ export function DashboardPage() {
             <div className="document-card">
               <div className="document-toolbar">
                 <span>
-                  Paste text or upload PDF, DOC, DOCX, EML, HTML, MD, RTF, or TXT
+                  Add text or upload PDF, DOC, DOCX, EML, HTML, MD, RTF, or TXT
                 </span>
                 <div>
-                  <button onClick={pasteText} type="button">Demo</button>
-                  <button onClick={() => fileRef.current?.click()} type="button">Upload</button>
-                  <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Checking..." : "Check"}</button>
+                  <button aria-label="Upload file" className="icon-action-button" onClick={() => fileRef.current?.click()} type="button">
+                    <Paperclip size={15} />
+                  </button>
+                  <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Checking..." : "Run check"}</button>
                 </div>
                 <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
               </div>
               <HighlightedEditor draft={draft} onChange={setDraft} onSelectViolation={setActiveId} violations={visibleViolations} />
-            </div>
-
-            <div className="work-outcome-strip">
-              <div>
-                <CheckCircle2 size={16} />
-                <span>{report.score}% score</span>
-              </div>
-              <div>
-                <ShieldCheck size={16} />
-                <span>{report.flaggedSections} risky sections found</span>
-              </div>
-              <div>
-                <Wand2 size={16} />
-                <span>{visibleViolations.length ? "Ready with rewrites" : "No rewrite needed"}</span>
-              </div>
             </div>
           </section>
 
