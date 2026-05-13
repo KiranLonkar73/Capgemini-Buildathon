@@ -254,6 +254,14 @@
   - Made drag/drop more reliable by handling drag events on the full input stage and the dropzone, adding active drag styling, resetting file input value, and showing a ready notice after a file is dropped.
   - Browser verified employee Settings desktop/mobile, Run Analysis button geometry/color, and drag/drop using a synthetic `drop-test.txt` file.
   - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed admin dashboard, audit, and integrations pass:
+  - Admin login and admin demo login now open `/dashboard` first.
+  - Added role-aware Admin Dashboard with policy memory, audit trail, integrations, team access, risk overview, and extension deployment next actions.
+  - Added working admin Audit Trail controls: `all/open/reviewed` filters, per-event `Mark reviewed`, and CSV export.
+  - Expanded admin Settings integrations with a generated demo API key, webhook endpoint field, extension setup checklist, and production integration guidance.
+  - Increased spacing between employee Settings sections and cards.
+  - Browser verified admin login routing, admin dashboard, audit filtering/review action, generated API key, employee settings spacing, and mobile no-overflow checks.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:

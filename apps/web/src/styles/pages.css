@@ -191,13 +191,13 @@
 
 .employee-settings-layout {
   display: grid;
-  gap: 14px;
+  gap: 24px;
 }
 
 .employee-settings-top {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: 24px;
   align-items: start;
 }
 
@@ -208,6 +208,7 @@
 
 .employee-settings-cards {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .admin-control-stack {
@@ -229,6 +230,92 @@
 .integration-setup-card {
   grid-template-columns: 22px minmax(0, 1fr);
   margin-top: 10px;
+}
+
+.admin-integration-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.api-key-box {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(248,250,252,.8);
+}
+
+.api-key-box svg {
+  color: var(--accent);
+}
+
+.api-key-box strong,
+.api-key-box code {
+  display: block;
+}
+
+.api-key-box code {
+  margin-top: 4px;
+  color: var(--secondary);
+  font-size: .78rem;
+  overflow-wrap: anywhere;
+}
+
+.api-key-box button,
+.extension-checklist button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--secondary);
+  background: rgba(255,255,255,.78);
+  font-size: .78rem;
+  font-weight: 820;
+}
+
+.webhook-field {
+  display: grid;
+  gap: 7px;
+  color: var(--secondary);
+  font-size: .84rem;
+  font-weight: 760;
+}
+
+.webhook-field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: rgba(248,250,252,.82);
+  color: var(--text);
+}
+
+.extension-checklist {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.extension-checklist button {
+  justify-content: flex-start;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 13px;
+  text-align: left;
+}
+
+.extension-checklist button.done {
+  color: #047857;
+  border-color: rgba(16,185,129,.25);
+  background: rgba(236,253,245,.84);
 }
 
 .employee-invite-row svg,

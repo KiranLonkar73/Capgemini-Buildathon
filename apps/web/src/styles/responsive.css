@@ -12,6 +12,9 @@
   .work-grid,
   .employee-workspace-grid,
   .result-workspace,
+  .admin-dashboard-grid,
+  .admin-ops-grid,
+  .audit-workspace,
   .workflow-grid,
   .profile-grid {
     grid-template-columns: 1fr;
@@ -38,6 +41,7 @@
   .employee-settings-top,
   .employee-settings-cards,
   .admin-report-grid,
+  .extension-checklist,
   .integration-grid {
     grid-template-columns: 1fr;
   }

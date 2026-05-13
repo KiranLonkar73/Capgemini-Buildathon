@@ -996,6 +996,108 @@
   min-height: 224px;
 }
 .ops-card.wide { grid-column: span 2; }
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.admin-dashboard-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 184px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  color: var(--text);
+  background: rgba(255,255,255,.78);
+  box-shadow: var(--shadow-soft);
+  text-decoration: none;
+}
+.admin-dashboard-card.primary {
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  background: linear-gradient(180deg, rgba(255,255,255,.9), color-mix(in srgb, var(--accent) 10%, white));
+}
+.admin-dashboard-card svg,
+.admin-section-head svg {
+  color: var(--accent);
+}
+.admin-dashboard-card span,
+.admin-dashboard-card small {
+  color: var(--muted);
+}
+.admin-dashboard-card strong {
+  font-size: 1.25rem;
+  letter-spacing: -.04em;
+}
+.admin-dashboard-card small {
+  line-height: 1.45;
+}
+.admin-ops-grid,
+.audit-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 14px;
+}
+.admin-section-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.admin-section-head h2 {
+  margin: 4px 0 0;
+  font-size: 1.2rem;
+  letter-spacing: -.04em;
+}
+.audit-control-card {
+  order: 2;
+}
+.audit-feed .activity-item {
+  grid-template-columns: 18px minmax(0, 1fr) minmax(128px, auto);
+}
+.activity-item small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .78rem;
+}
+.audit-filter-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.audit-filter-row button,
+.audit-actions button,
+.audit-export-button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(248,250,252,.82);
+  color: var(--secondary);
+  font-size: .78rem;
+  font-weight: 820;
+}
+.audit-filter-row button.active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, white);
+}
+.audit-export-button {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.audit-actions {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+.audit-actions button {
+  padding: 0 10px;
+  color: var(--accent);
+}
 .heatmap-list, .insight-list, .security-list, .activity-feed, .team-table, .policy-system-list, .rewrite-queue { display: grid; gap: 10px; }
 .heatmap-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 42px; gap: 10px; align-items: center; font-size: .84rem; }
 .heatmap-row div { height: 8px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }

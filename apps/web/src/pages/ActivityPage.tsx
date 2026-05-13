@@ -1,4 +1,5 @@
-import { Activity, Bot, CheckCircle2, FileText, GitBranch, MailCheck, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Activity, Bot, CheckCircle2, Download, FileText, GitBranch, MailCheck, ShieldCheck } from "lucide-react";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { activityFeed, aiInsights } from "../data/productData";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
@@ -9,8 +10,39 @@ const employeeHistory = [
   { title: "HR note", detail: "Email draft checked. No policy issues found.", time: "May 12" }
 ];
 
+const seededAuditEvents = activityFeed.map((activity, index) => ({
+  ...activity,
+  id: `audit-${index}`,
+  status: index < 2 ? "open" : "reviewed",
+  owner: index % 2 === 0 ? "Legal" : "Compliance"
+}));
+
 export function ActivityPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
+  const [filter, setFilter] = useState<"all" | "open" | "reviewed">("all");
+  const [auditEvents, setAuditEvents] = useState(seededAuditEvents);
+
+  const visibleAuditEvents = useMemo(
+    () => auditEvents.filter((event) => filter === "all" || event.status === filter),
+    [auditEvents, filter]
+  );
+
+  function markReviewed(id: string) {
+    setAuditEvents((events) => events.map((event) => event.id === id ? { ...event, status: "reviewed" } : event));
+  }
+
+  function exportAudit() {
+    const csv = [
+      "title,detail,owner,status,time",
+      ...visibleAuditEvents.map((event) => `"${event.title}","${event.detail}","${event.owner}","${event.status}","${event.time}"`)
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "complylens-audit-trail.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <WorkspaceShell role={role}>
@@ -18,10 +50,10 @@ export function ActivityPage() {
         <div className="workspace-command-bar compact-command-bar">
           <div>
             <h1>{role === "admin" ? "Audit Trail" : "Session History"}</h1>
-            <p>{role === "admin" ? "Trace scans, rewrites, uploads, policy retrieval, and reviewer decisions." : "See your previous compliance checks and what happened in each one."}</p>
+            <p>{role === "admin" ? "Filter, review, and export scans, rewrites, uploads, policy retrieval, and extension events." : "See your previous compliance checks and what happened in each one."}</p>
           </div>
           <div className="workspace-command-status">
-            <span><GitBranch size={15} /> {role === "admin" ? "4 policy retrievals" : "3 saved checks"}</span>
+            <span><GitBranch size={15} /> {role === "admin" ? `${visibleAuditEvents.length} events shown` : "3 saved checks"}</span>
             <span><MailCheck size={15} /> Gmail ready</span>
           </div>
         </div>
@@ -53,11 +85,22 @@ export function ActivityPage() {
             </section>
           </div>
         ) : (
-          <div className="intelligence-grid intelligence-grid--balanced">
-            <section className="ops-card">
-              <PanelTitle label="AI review queue" title="Priority observations" />
+          <div className="audit-workspace">
+            <section className="ops-card audit-control-card">
+              <PanelTitle label="Audit controls" title="Working review queue" />
+              <div className="audit-filter-row">
+                {(["all", "open", "reviewed"] as const).map((item) => (
+                  <button className={filter === item ? "active" : ""} key={item} onClick={() => setFilter(item)} type="button">
+                    {item}
+                  </button>
+                ))}
+              </div>
+              <button className="secondary-action-button audit-export-button" onClick={exportAudit} type="button">
+                <Download size={15} />
+                Export CSV
+              </button>
               <div className="insight-list">
-                {aiInsights.map((insight) => (
+                {aiInsights.slice(0, 2).map((insight) => (
                   <div key={insight}><Bot size={16} />{insight}</div>
                 ))}
               </div>
@@ -65,26 +108,25 @@ export function ActivityPage() {
 
             <section className="ops-card wide">
               <PanelTitle label="Compliance log" title="Operational history" />
-              <div className="activity-feed">
-                {activityFeed.map((activity) => (
-                  <article className={`activity-item tone-${activity.tone}`} key={activity.title}>
+              <div className="activity-feed audit-feed">
+                {visibleAuditEvents.map((activity) => (
+                  <article className={`activity-item tone-${activity.tone}`} key={activity.id}>
                     <Activity size={16} />
                     <div>
                       <strong>{activity.title}</strong>
                       <span>{activity.detail}</span>
+                      <small>{activity.owner} · {activity.status}</small>
                     </div>
-                    <time>{activity.time}</time>
+                    <div className="audit-actions">
+                      <time>{activity.time}</time>
+                      {activity.status === "open" && (
+                        <button onClick={() => markReviewed(activity.id)} type="button">
+                          Mark reviewed
+                        </button>
+                      )}
+                    </div>
                   </article>
                 ))}
-              </div>
-            </section>
-
-            <section className="ops-card">
-              <PanelTitle label="Reviewer actions" title="Decision states" />
-              <div className="insight-list">
-                <div><CheckCircle2 size={16} /> 14 rewrites accepted by owners</div>
-                <div><ShieldCheck size={16} /> 6 items marked safe after review</div>
-                <div><Activity size={16} /> 3 high-risk findings still open</div>
               </div>
             </section>
           </div>

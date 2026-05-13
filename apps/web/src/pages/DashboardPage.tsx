@@ -1,5 +1,6 @@
 import { ChangeEvent, DragEvent, useRef, useState } from "react";
-import { AlertTriangle, ArrowUp, CheckCircle2, FileText, History, Paperclip, RefreshCw, UploadCloud } from "lucide-react";
+import { AlertTriangle, ArrowUp, BarChart3, CheckCircle2, Database, FileText, History, KeyRound, MailCheck, Paperclip, RefreshCw, ShieldCheck, UploadCloud, UsersRound } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   applyRewrite,
   runDemoComplianceCheck,
@@ -23,6 +24,7 @@ type SessionHistoryItem = {
 const emptyReport = runDemoComplianceCheck("");
 
 export function DashboardPage() {
+  const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [draft, setDraft] = useState("");
   const [documentName, setDocumentName] = useState("No file selected");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -170,6 +172,83 @@ export function DashboardPage() {
     setDraft(nextDraft);
     setHiddenIds((ids) => [...new Set([...ids, violation.id])]);
     setNotice({ kind: "success", text: "Rewrite applied to the document draft." });
+  }
+
+  if (role === "admin") {
+    return (
+      <WorkspaceShell role="admin">
+        <section className="ops-dashboard simple-dashboard">
+          <div className="workspace-command-bar compact-command-bar">
+            <div>
+              <h1>Admin Dashboard</h1>
+              <p>Manage policies, employee access, audit events, and real-world integration setup from one control surface.</p>
+            </div>
+            <div className="workspace-command-status">
+              <span><ShieldCheck size={15} /> Admin mode</span>
+              <span><MailCheck size={15} /> Extension ready</span>
+            </div>
+          </div>
+
+          <div className="admin-dashboard-grid">
+            <Link className="admin-dashboard-card primary" to="/policies">
+              <Database size={20} />
+              <span>Policy memory</span>
+              <strong>829 chunks indexed</strong>
+              <small>Upload company rules and monitor retrieval health.</small>
+            </Link>
+            <Link className="admin-dashboard-card" to="/audit">
+              <History size={20} />
+              <span>Audit trail</span>
+              <strong>7 open events</strong>
+              <small>Review scans, rewrites, uploads, and extension activity.</small>
+            </Link>
+            <Link className="admin-dashboard-card" to="/settings">
+              <KeyRound size={20} />
+              <span>Integrations</span>
+              <strong>API + Extension</strong>
+              <small>Generate demo API keys and configure extension/webhook setup.</small>
+            </Link>
+            <Link className="admin-dashboard-card" to="/settings">
+              <UsersRound size={20} />
+              <span>Team access</span>
+              <strong>12 employees</strong>
+              <small>Invite employees and keep policy upload admin-only.</small>
+            </Link>
+          </div>
+
+          <div className="admin-ops-grid">
+            <section className="ops-card wide">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Risk overview</span>
+                  <h2>Business value this month</h2>
+                </div>
+                <BarChart3 size={20} />
+              </div>
+              <div className="admin-report-grid">
+                <div><BarChart3 size={17} /><span>Risk stopped</span><strong>38</strong><small>messages blocked before sending</small></div>
+                <div><ShieldCheck size={17} /><span>Rewrite adoption</span><strong>74%</strong><small>safe rewrites accepted</small></div>
+                <div><AlertTriangle size={17} /><span>Open escalations</span><strong>7</strong><small>need reviewer decision</small></div>
+              </div>
+            </section>
+            <section className="ops-card">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Next action</span>
+                  <h2>Deploy Gmail extension</h2>
+                </div>
+                <MailCheck size={20} />
+              </div>
+              <div className="insight-list">
+                <div><CheckCircle2 size={16} /> Build extension package</div>
+                <div><KeyRound size={16} /> Add API endpoint in Admin</div>
+                <div><UsersRound size={16} /> Assign employees after install</div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </WorkspaceShell>
+    );
   }
 
   return (

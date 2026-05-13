@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { BarChart3, Bell, Gauge, KeyRound, Palette, Puzzle, ShieldCheck, SlidersHorizontal, UserPlus, UsersRound } from "lucide-react";
+import { BarChart3, Bell, CheckCircle2, Gauge, KeyRound, Palette, Puzzle, RefreshCw, ShieldCheck, SlidersHorizontal, UserPlus, UsersRound } from "lucide-react";
 import { saveCompanySettings } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
@@ -46,6 +46,9 @@ export function SettingsPage() {
   const [notice, setNotice] = useState<Notice>(null);
   const [saving, setSaving] = useState(false);
   const [personalization, setPersonalization] = useState<Personalization>(() => loadPersonalization());
+  const [apiKey, setApiKey] = useState("cl_demo_not_generated");
+  const [webhookUrl, setWebhookUrl] = useState("https://company.com/api/complylens/webhook");
+  const [extensionSteps, setExtensionSteps] = useState(["build", "load"]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -74,6 +77,16 @@ export function SettingsPage() {
     setPersonalization(updated);
     window.localStorage.setItem("complylens-personalization", JSON.stringify(updated));
     setNotice({ kind: "success", text: "Workspace personalization updated." });
+  }
+
+  function generateApiKey() {
+    const token = `cl_demo_${Math.random().toString(36).slice(2, 8)}_${Math.random().toString(36).slice(2, 14)}`;
+    setApiKey(token);
+    setNotice({ kind: "success", text: "Demo API key generated. Store real production keys in a secure backend vault." });
+  }
+
+  function toggleExtensionStep(step: string) {
+    setExtensionSteps((steps) => steps.includes(step) ? steps.filter((item) => item !== step) : [...steps, step]);
   }
 
   const profileForm = (
@@ -217,19 +230,42 @@ export function SettingsPage() {
               </section>
 
               <section className="ops-card">
-                <PanelTitle label="Extension" title="Gmail deployment" />
-                <div className="integration-setup-card">
-                  <Puzzle size={18} />
-                  <div>
-                    <strong>Chrome extension package ready</strong>
-                    <span>Load `apps/extension/dist` in Chrome after running `npm run build:extension`.</span>
+                <PanelTitle label="Integrations" title="API and extension setup" />
+                <div className="admin-integration-panel">
+                  <div className="api-key-box">
+                    <KeyRound size={18} />
+                    <div>
+                      <strong>API key</strong>
+                      <code>{apiKey}</code>
+                    </div>
+                    <button onClick={generateApiKey} type="button">
+                      <RefreshCw size={14} />
+                      Generate
+                    </button>
+                  </div>
+                  <label className="webhook-field">
+                    Webhook endpoint
+                    <input value={webhookUrl} onChange={(event) => setWebhookUrl(event.target.value)} />
+                  </label>
+                  <div className="extension-checklist">
+                    {[
+                      ["build", "Run npm run build:extension"],
+                      ["load", "Load apps/extension/dist in Chrome"],
+                      ["api", "Set backend URL to http://127.0.0.1:8000"],
+                      ["assign", "Assign employees after install"]
+                    ].map(([id, label]) => (
+                      <button className={extensionSteps.includes(id) ? "done" : ""} key={id} onClick={() => toggleExtensionStep(id)} type="button">
+                        <CheckCircle2 size={15} />
+                        {label}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 <div className="integration-setup-card">
-                  <KeyRound size={18} />
+                  <Puzzle size={18} />
                   <div>
-                    <strong>API endpoint</strong>
-                    <span>Connect extension calls to the backend analysis route before production use.</span>
+                    <strong>Production integration path</strong>
+                    <span>Point web, extension, and webhook clients to the same backend analysis endpoints so policy logic stays centralized.</span>
                   </div>
                 </div>
               </section>

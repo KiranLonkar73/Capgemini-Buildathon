@@ -20,7 +20,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
       return;
     }
     window.localStorage.setItem("complylens-role", role);
-    navigate(role === "admin" ? "/policies" : "/dashboard");
+    navigate("/dashboard");
   }
 
   return (
@@ -80,7 +80,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             className="demo-button"
             onClick={() => {
               window.localStorage.setItem("complylens-role", role);
-              navigate(role === "admin" ? "/policies" : "/dashboard");
+              navigate("/dashboard");
             }}
             type="button"
           >
