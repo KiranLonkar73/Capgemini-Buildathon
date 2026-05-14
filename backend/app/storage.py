@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import os
+import tempfile
 
 from .models import CompanySettings, PolicyReference
 
@@ -43,4 +45,21 @@ class JsonStateStore:
             return {}
 
     def _write(self, state: dict) -> None:
-        self.path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+        # Write atomically: write to a temp file in the same directory, then replace
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        dirpath = str(self.path.parent)
+        fd = None
+        tmp_path = None
+        try:
+            with tempfile.NamedTemporaryFile("w", delete=False, dir=dirpath, encoding="utf-8") as handle:
+                json.dump(state, handle, indent=2, ensure_ascii=False)
+                handle.flush()
+                tmp_path = Path(handle.name)
+            os.replace(str(tmp_path), str(self.path))
+        finally:
+            # Best-effort cleanup if something went wrong
+            try:
+                if tmp_path and tmp_path.exists():
+                    tmp_path.unlink()
+            except Exception:
+                pass
