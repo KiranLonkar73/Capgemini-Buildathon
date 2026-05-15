@@ -1,0 +1,146 @@
+POLICY CATEGORY 1 — DATA PRIVACY & CUSTOMER INFORMATION POLICY
+Policy 1.1 — Sensitive Personal Information Protection
+
+Employees must not share customer PAN, Aadhaar, passport numbers, banking details, or other personally identifiable information (PII) through unsecured communication channels such as WhatsApp, personal email, SMS, or public chat platforms.
+
+Policy 1.2 — Authorized Data Sharing
+
+Customer information may only be shared with authorized personnel who have legitimate business access and approval from the respective department manager.
+
+Policy 1.3 — External Data Transmission
+
+Any transfer of confidential customer data outside the organization must use approved encrypted communication systems and secure storage platforms.
+
+Policy 1.4 — Unauthorized Screenshots and Downloads
+
+Employees are prohibited from taking screenshots, downloading, or locally storing confidential customer information on personal devices without written authorization.
+
+Policy 1.5 — Customer Consent Requirement
+
+Customer personal data must not be collected, processed, or shared without proper customer consent and lawful business purpose.
+
+Policy 1.6 — Data Retention Compliance
+
+Sensitive customer records must only be retained for the approved retention period defined by organizational compliance standards.
+
+Policy 1.7 — Public Disclosure Restrictions
+
+Employees must not publicly disclose customer information, internal reports, or confidential operational data on social media or public forums.
+
+
+
+POLICY CATEGORY 2 — HR, ETHICS & WORKPLACE CONDUCT POLICY
+Policy 2.1 — Anti-Discrimination Communication
+
+Employees must avoid discriminatory, offensive, or biased language related to gender, religion, race, nationality, disability, or age in all internal and external communications.
+
+Policy 2.2 — Inclusive Hiring Communication
+
+Recruitment and hiring-related communication must remain inclusive and must not indicate preference for any gender, caste, religion, or personal background unless legally permitted.
+
+Policy 2.3 — Workplace Harassment Prevention
+
+Harassment, bullying, intimidation, or threatening language in workplace communication is strictly prohibited.
+
+Policy 2.4 — Professional Conduct Standards
+
+Employees must maintain professional and respectful behavior while communicating with colleagues, customers, vendors, and stakeholders.
+
+Policy 2.5 — Confidential HR Information
+
+Salary details, employee records, performance reviews, and disciplinary actions must not be shared without HR authorization.
+
+Policy 2.6 — Internal Complaint Confidentiality
+
+Employees handling internal complaints or investigations must maintain confidentiality throughout the investigation process.
+
+
+
+POLICY CATEGORY 3 — INFORMATION SECURITY POLICY
+Policy 3.1 — Password & Credential Protection
+
+Employees must never share passwords, API keys, MFA codes, access tokens, or login credentials through email, chat, or unsecured platforms.
+
+Policy 3.2 — Secure Authentication Requirements
+
+All enterprise systems containing confidential or customer data must use multi-factor authentication (MFA).
+
+Policy 3.3 — Unauthorized Software Usage
+
+Employees must not install or use unauthorized third-party software, extensions, or applications on company systems.
+
+Policy 3.4 — Confidential System Access
+
+Access to internal systems, databases, and infrastructure must follow role-based access control policies.
+
+Policy 3.5 — Security Incident Reporting
+
+Any suspected data breach, phishing attempt, malware activity, or unauthorized access must be reported immediately to the security team.
+
+Policy 3.6 — Internal Infrastructure Disclosure
+
+Employees must not share server architecture details, internal IP addresses, infrastructure diagrams, or security configurations externally.
+
+Policy 3.7 — Source Code Confidentiality
+
+Proprietary source code, internal repositories, algorithms, and development credentials must not be shared outside approved engineering environments.
+
+
+
+
+POLICY CATEGORY 4 — LEGAL & MARKETING COMPLIANCE POLICY
+Policy 4.1 — False Claims Restriction
+
+Employees must not make misleading, exaggerated, or unverifiable claims regarding company products, services, performance, or guarantees.
+
+Policy 4.2 — Financial Commitment Restrictions
+
+Employees must not promise guaranteed financial returns, investment profits, or contractual approvals without legal authorization.
+
+Policy 4.3 — Unapproved Public Statements
+
+Public announcements, press statements, and media responses may only be issued by authorized representatives.
+
+Policy 4.4 — Intellectual Property Protection
+
+Employees must not share copyrighted, proprietary, or licensed materials without proper authorization.
+
+Policy 4.5 — Contractual Confidentiality
+
+Terms of client contracts, vendor agreements, and partnership discussions must remain confidential unless disclosure is legally approved.
+
+Policy 4.6 — Regulatory Compliance
+
+All customer communication and marketing materials must comply with applicable legal and regulatory standards.
+
+
+
+
+POLICY CATEGORY 5 — CUSTOMER COMMUNICATION & OPERATIONS POLICY
+Policy 5.1 — Professional Customer Communication
+
+Employees must maintain respectful, professional, and accurate communication with customers at all times.
+
+Policy 5.2 — Unauthorized Commitments
+
+Employees must not provide delivery guarantees, pricing commitments, refunds, or operational promises without authorized approval.
+
+Policy 5.3 — Confidential Project Discussions
+
+Internal project details, unreleased features, roadmap discussions, and operational strategies must not be disclosed externally.
+
+Policy 5.4 — Escalation Requirements
+
+Customer complaints involving legal, financial, or security concerns must be escalated to the designated compliance team.
+
+Policy 5.5 — Communication Record Retention
+
+Business-critical communication with customers and stakeholders must be retained according to organizational retention standards.
+
+Policy 5.6 — Third-Party Information Sharing
+
+Customer or operational data must not be shared with external vendors or partners without proper contractual authorization.
+
+Policy 5.7 — AI-Generated Communication Review
+
+AI-generated customer-facing content must be reviewed by authorized personnel before external distribution.

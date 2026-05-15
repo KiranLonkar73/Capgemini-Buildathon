@@ -2,6 +2,12 @@
 
 Enterprise AI compliance copilot for scanning documents and Gmail drafts against company policy.
 
+Originally prototyped as the AI-Policy-Compliance-RAG project for the Capgemini Exceller AgenticAI Buildathon, focused on a modular RAG pipeline using LangChain, ChromaDB, and Groq LLM.
+
+## Overview
+
+ComplyLens combines a policy-aware retrieval pipeline with a SaaS dashboard and a Chrome extension. It is designed to surface policy violations, explain why they occur, and suggest safer rewrites while keeping the system usable without external LLM keys.
+
 ## Current Scope
 
 - `apps/web`: React/Vite routed SaaS UI with landing page, auth screens, dashboard, policies, extension, and settings.

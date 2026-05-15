@@ -2,24 +2,25 @@ node_modules
 dist
 .env
 .env.local
-backend/data/*.json
 *.log
-__pycache__/
-*.py[cod]
-.playwright-mcp
 *.png
 *.tsbuildinfo
+.playwright-mcp
+backend/data/*.json
+data/vector_store/
 apps/**/*.js
 apps/**/*.d.ts
+apps/**/*.d.ts.map
 packages/**/*.js
 packages/**/*.d.ts
 packages/**/*.d.ts.map
-apps/**/*.d.ts.map
-# Ignore virtual environments
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Virtual environments
 .venv/
 venv/
 env/
-
-# Ignore Python cache files
-__pycache__/
-*.pyc

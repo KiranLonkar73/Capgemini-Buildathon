@@ -1,0 +1,30 @@
+
+POLICY CATEGORY 5 — CUSTOMER COMMUNICATION & OPERATIONS POLICY
+
+Policy 5.1 — Professional Customer Communication
+
+Employees must maintain respectful, professional, and accurate communication with customers at all times.
+
+Policy 5.2 — Unauthorized Commitments
+
+Employees must not provide delivery guarantees, pricing commitments, refunds, or operational promises without authorized approval.
+
+Policy 5.3 — Confidential Project Discussions
+
+Internal project details, unreleased features, roadmap discussions, and operational strategies must not be disclosed externally.
+
+Policy 5.4 — Escalation Requirements
+
+Customer complaints involving legal, financial, or security concerns must be escalated to the designated compliance team.
+
+Policy 5.5 — Communication Record Retention
+
+Business-critical communication with customers and stakeholders must be retained according to organizational retention standards.
+
+Policy 5.6 — Third-Party Information Sharing
+
+Customer or operational data must not be shared with external vendors or partners without proper contractual authorization.
+
+Policy 5.7 — AI-Generated Communication Review
+
+AI-generated customer-facing content must be reviewed by authorized personnel before external distribution.

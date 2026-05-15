@@ -1,0 +1,30 @@
+
+POLICY CATEGORY 3 — INFORMATION SECURITY POLICY
+
+Policy 3.1 — Password & Credential Protection
+
+Employees must never share passwords, API keys, MFA codes, access tokens, or login credentials through email, chat, or unsecured platforms.
+
+Policy 3.2 — Secure Authentication Requirements
+
+All enterprise systems containing confidential or customer data must use multi-factor authentication (MFA).
+
+Policy 3.3 — Unauthorized Software Usage
+
+Employees must not install or use unauthorized third-party software, extensions, or applications on company systems.
+
+Policy 3.4 — Confidential System Access
+
+Access to internal systems, databases, and infrastructure must follow role-based access control policies.
+
+Policy 3.5 — Security Incident Reporting
+
+Any suspected data breach, phishing attempt, malware activity, or unauthorized access must be reported immediately to the security team.
+
+Policy 3.6 — Internal Infrastructure Disclosure
+
+Employees must not share server architecture details, internal IP addresses, infrastructure diagrams, or security configurations externally.
+
+Policy 3.7 — Source Code Confidentiality
+
+Proprietary source code, internal repositories, algorithms, and development credentials must not be shared outside approved engineering environments.
