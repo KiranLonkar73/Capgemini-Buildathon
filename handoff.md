@@ -218,6 +218,63 @@
   - `npm run typecheck` passes.
   - `npm run build:web` passes.
   - Browser checked `/dashboard` desktop.
+- Completed employee/admin workspace simplification pass:
+  - Removed visible `Inbox`, `Integrations`, and `Reports` navigation.
+  - Combined `Settings` and `Profile` into one role-aware page.
+  - Added frontend role selection for `Admin` vs `Employee` during login/signup and stored the demo role in `localStorage`.
+  - Employee sidebar now shows `Workspace`, `History`, and `Settings`.
+  - Admin sidebar now shows `Workspace`, `Policies`, `Audit Trail`, and `Admin`.
+  - Rebuilt `Compliance Workspace` around a large centered upload/drop box, typed text entry, and a clear `Run Analysis` button.
+  - After analysis, the result view now takes over the main screen with highlighted original text and violation/rewrite cards; upload-next remains available.
+  - Removed the old compliance sessions rail and right intelligence rail from the workspace.
+  - Added employee session history beside the workspace and a dedicated employee history view.
+  - Policy upload is now admin-only; employees hitting `/policies` see an admin-required message.
+  - Added simple admin reports, employee assignment, extension setup, and API notes into the combined admin/settings page.
+  - Started the frontend at `http://127.0.0.1:5173/` and backend at `http://127.0.0.1:8000/`.
+  - Verification passed: `npm run typecheck`, `npm run build:web`, browser checked employee workspace analysis at `1366x768` and admin/employee policy access behavior.
+- Completed workspace personalization and session controls pass:
+  - Added persistent `Home` and `Logout` controls to the dashboard/sidebar shell.
+  - Logout clears the demo role from `localStorage` and returns the user to `/login`.
+  - Added Settings personalization for accent color, layout density, default work input, and rewrite tone.
+  - Workspace shell now reads saved personalization and applies accent/density classes across dashboard pages.
+  - Browser checked dashboard and settings at `1366x768` and dashboard mobile at `390x844`; no horizontal overflow found.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed workspace alignment and notification fix:
+  - Rebuilt notice UI with status icons and tighter grid alignment.
+  - Moved dashboard notices into the employee history side panel so notifications no longer push down or cover the main upload/result workspace.
+  - Centered the pre-analysis upload/text stage inside the main workspace panel.
+  - Hid the whole input stage after analysis so results occupy the main panel cleanly without leftover empty spacing.
+  - Browser checked workspace before and after analysis at `1366x768`; main panel x/width stayed stable and no horizontal overflow was found.
+  - Browser checked mobile dashboard at `390x844`; no horizontal overflow was found.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed employee settings and workspace input alignment fix:
+  - Reworked employee Settings into a clear two-column desktop layout with profile and personalization side by side, plus preference cards in a balanced row.
+  - Added mobile stacking for personalization controls so employee Settings no longer feels cramped on small screens.
+  - Added real flex/gradient styling for `Run Analysis` so the icon, text, color, and button height align with the rest of the workspace controls.
+  - Made drag/drop more reliable by handling drag events on the full input stage and the dropzone, adding active drag styling, resetting file input value, and showing a ready notice after a file is dropped.
+  - Browser verified employee Settings desktop/mobile, Run Analysis button geometry/color, and drag/drop using a synthetic `drop-test.txt` file.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed admin dashboard, audit, and integrations pass:
+  - Admin login and admin demo login now open `/dashboard` first.
+  - Added role-aware Admin Dashboard with policy memory, audit trail, integrations, team access, risk overview, and extension deployment next actions.
+  - Added working admin Audit Trail controls: `all/open/reviewed` filters, per-event `Mark reviewed`, and CSV export.
+  - Expanded admin Settings integrations with a generated demo API key, webhook endpoint field, extension setup checklist, and production integration guidance.
+  - Increased spacing between employee Settings sections and cards.
+  - Browser verified admin login routing, admin dashboard, audit filtering/review action, generated API key, employee settings spacing, and mobile no-overflow checks.
+  - Verification passed: `npm run typecheck`, `npm run build:web`.
+- Completed persistence and extension integration feature pass:
+  - Added backend state models/endpoints for employees, invites, employee status, saved analysis sessions, audit events, policy versions, and policy enable/disable toggles.
+  - Analysis calls now save sessions and write audit events with department/team metadata.
+  - Added role-based route guards for dashboard/audit/settings/policies; unauthenticated users redirect to `/login`, employees cannot access admin policy routes.
+  - Added department/team filters to employee workspace analysis and saved sessions display.
+  - Added loading skeletons during analysis.
+  - Added report export button that downloads a simple PDF analysis summary.
+  - Added admin employee invite flow and user management table with status controls.
+  - Added admin policy version rows with enable/disable toggles and version incrementing.
+  - Admin audit trail now loads backend audit events, supports department filtering, review status updates, and CSV export.
+  - Extension popup now supports configurable backend URL, connection test, and stored API base URL.
+  - Gmail content script now uses the stored backend URL instead of a hardcoded API constant.
+  - Verification passed: `npm run typecheck`, `npm run build:web`, `npm run build:extension`, `python3 -m py_compile backend/app/*.py`, backend smoke tests, and browser flow checks for guards, invites, policies, audit, sessions, and PDF export button.
   - Browser checked `/dashboard` mobile after reordering the workspace stack.
   - Browser checked `/integrations` desktop after signal-card fixes.
 - Pending cleanup verification:

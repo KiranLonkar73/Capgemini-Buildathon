@@ -5,7 +5,7 @@ from pathlib import Path
 import os
 import tempfile
 
-from .models import CompanySettings, PolicyReference
+from .models import AuditEvent, CompanySettings, Employee, PolicyReference, SavedSession
 
 
 class JsonStateStore:
@@ -34,6 +34,30 @@ class JsonStateStore:
     def save_settings(self, settings: CompanySettings) -> None:
         state = self._read()
         state["settings"] = settings.model_dump()
+        self._write(state)
+
+    def load_employees(self) -> list[Employee]:
+        return [Employee.model_validate(item) for item in self._read().get("employees", [])]
+
+    def save_employees(self, employees: list[Employee]) -> None:
+        state = self._read()
+        state["employees"] = [employee.model_dump() for employee in employees]
+        self._write(state)
+
+    def load_sessions(self) -> list[SavedSession]:
+        return [SavedSession.model_validate(item) for item in self._read().get("sessions", [])]
+
+    def save_sessions(self, sessions: list[SavedSession]) -> None:
+        state = self._read()
+        state["sessions"] = [session.model_dump() for session in sessions]
+        self._write(state)
+
+    def load_audit_events(self) -> list[AuditEvent]:
+        return [AuditEvent.model_validate(item) for item in self._read().get("audit_events", [])]
+
+    def save_audit_events(self, events: list[AuditEvent]) -> None:
+        state = self._read()
+        state["audit_events"] = [event.model_dump() for event in events]
         self._write(state)
 
     def _read(self) -> dict:

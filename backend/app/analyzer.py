@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import uuid
 
-from .models import ComplianceReport, PolicyReference, Violation
+from .models import ComplianceReport, PolicyReference, Severity, Violation
 from .policy_store import PolicyStore
 
 
@@ -42,6 +42,8 @@ PATTERNS = [
     },
 ]
 
+POLICY_MATCH_MIN_SCORE = 0.22
+
 
 def split_sentences(text: str) -> list[str]:
     candidates = re.split(r"(?<=[.!?])\s+|\n+", text)
@@ -64,11 +66,18 @@ def best_reference(references: list[PolicyReference], policy_hint: str) -> Polic
     )
 
 
+def severity_for_reference(reference: PolicyReference) -> Severity:
+    high_markers = ("confidential", "privacy", "security", "customer", "credential", "salary", "compensation")
+    marker_text = f"{reference.policy} {reference.section}".lower()
+    return "high" if any(marker in marker_text for marker in high_markers) else "medium"
+
+
 def analyze_text(text: str, store: PolicyStore, threshold: float = 0.62) -> ComplianceReport:
     sentences = split_sentences(text)
     violations: list[Violation] = []
     references = store.retrieve(text, top_k=8)
     lowered_sentences = [(sentence, sentence.lower()) for sentence in sentences]
+    flagged_sentences: set[str] = set()
 
     for pattern in PATTERNS:
         hits: list[str] = []
@@ -102,6 +111,37 @@ def analyze_text(text: str, store: PolicyStore, threshold: float = 0.62) -> Comp
                 citation=reference,
             )
         )
+        flagged_sentences.add(quote)
+
+    # Policy chunk matching: use uploaded policies to flag semantically similar sentences
+    for sentence in sentences:
+        if sentence in flagged_sentences:
+            continue
+        sentence_refs = store.retrieve(sentence, top_k=1)
+        if not sentence_refs:
+            continue
+        reference = sentence_refs[0]
+        if reference.score < POLICY_MATCH_MIN_SCORE:
+            continue
+
+        confidence = min(0.96, 0.5 + reference.score * 1.1)
+        violations.append(
+            Violation(
+                id=f"policy-match-{uuid.uuid4().hex[:8]}",
+                severity=severity_for_reference(reference),
+                confidence=round(confidence, 2),
+                quote=sentence,
+                policyName=reference.policy,
+                policySection=reference.section,
+                ruleText=reference.text,
+                explanation=(
+                    f"This sentence appears to overlap with policy guidance in {reference.policy} ({reference.section})."
+                ),
+                rewrite="Please align this statement with the policy guidance or remove sensitive details.",
+                citation=reference,
+            )
+        )
+        flagged_sentences.add(sentence)
 
     flagged = len(violations)
     clean = max(0, len(sentences) - flagged)

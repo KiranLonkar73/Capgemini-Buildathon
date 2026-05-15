@@ -1,21 +1,64 @@
-import { Activity, BarChart3, Building2, Cable, FileText, Inbox, Settings, Shield, UserCircle } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Activity, Building2, FileText, Home, LogOut, Settings, Shield } from "lucide-react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Brand } from "../components/common/Brand";
 
-const workspaceLinks = [
-  { to: "/dashboard", label: "Workspace", icon: FileText },
-  { to: "/inbox", label: "Inbox", icon: Inbox },
-  { to: "/policies", label: "Policies", icon: Shield },
-  { to: "/integrations", label: "Integrations", icon: Cable },
-  { to: "/analytics", label: "Reports", icon: BarChart3 },
-  { to: "/audit", label: "Audit Trail", icon: Activity },
-  { to: "/settings", label: "Settings", icon: Settings },
-  { to: "/profile", label: "Profile", icon: UserCircle }
-];
+type WorkspaceRole = "admin" | "employee";
+type WorkspacePersonalization = {
+  accent?: "indigo" | "emerald" | "amber";
+  density?: "comfortable" | "compact";
+};
 
-export function WorkspaceShell({ children }: { children: React.ReactNode }) {
+function getStoredRole(): WorkspaceRole {
+  if (typeof window === "undefined") {
+    return "employee";
+  }
+
+  return window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
+}
+
+function getWorkspaceLinks(role: WorkspaceRole) {
+  if (role === "admin") {
+    return [
+      { to: "/dashboard", label: "Workspace", icon: FileText },
+      { to: "/policies", label: "Policies", icon: Shield },
+      { to: "/audit", label: "Audit Trail", icon: Activity },
+      { to: "/settings", label: "Admin", icon: Settings }
+    ];
+  }
+
+  return [
+    { to: "/dashboard", label: "Workspace", icon: FileText },
+    { to: "/audit", label: "History", icon: Activity },
+    { to: "/settings", label: "Settings", icon: Settings }
+  ];
+}
+
+function getPersonalization(): WorkspacePersonalization {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    return JSON.parse(window.localStorage.getItem("complylens-personalization") ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+export function WorkspaceShell({ children, role = getStoredRole() }: { children: React.ReactNode; role?: WorkspaceRole }) {
+  const navigate = useNavigate();
+  const workspaceLinks = getWorkspaceLinks(role);
+  const personalization = getPersonalization();
+  const accent = personalization.accent ?? "indigo";
+  const density = personalization.density ?? "comfortable";
+
+  function logout() {
+    window.localStorage.removeItem("complylens-role");
+    navigate("/login");
+  }
+
   return (
-    <main className="workspace-shell">
+    <main className={`workspace-shell tone-${accent} density-${density}`}>
       <aside className="workspace-sidebar">
         <Link className="brand-link" to="/">
           <Brand />
@@ -28,11 +71,23 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
             </NavLink>
           ))}
         </nav>
-        <div className="workspace-org-card">
-          <Building2 size={16} />
-          <div>
-            <strong>Demo Enterprise</strong>
-            <span>Seeded policy model</span>
+        <div className="workspace-sidebar-footer">
+          <div className="workspace-org-card">
+            <Building2 size={16} />
+            <div>
+              <strong>Demo Enterprise</strong>
+              <span>{role === "admin" ? "Admin workspace" : "Employee workspace"}</span>
+            </div>
+          </div>
+          <div className="workspace-quick-actions">
+            <Link to="/">
+              <Home size={15} />
+              Home
+            </Link>
+            <button onClick={logout} type="button">
+              <LogOut size={15} />
+              Logout
+            </button>
           </div>
         </div>
       </aside>

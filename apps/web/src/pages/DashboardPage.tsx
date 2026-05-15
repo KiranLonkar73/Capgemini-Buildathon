@@ -1,99 +1,189 @@
-import { ChangeEvent, useRef, useState } from "react";
-import { ArrowUp, FileText, MailCheck, Paperclip, ShieldCheck, Wand2 } from "lucide-react";
+import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import { AlertTriangle, ArrowUp, BarChart3, CheckCircle2, Database, Download, FileText, History, KeyRound, MailCheck, Paperclip, RefreshCw, ShieldCheck, UploadCloud, UsersRound } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   applyRewrite,
-  demoDocument,
   runDemoComplianceCheck,
   type ComplianceReport,
   type Violation
 } from "@complylens/shared";
-import { analyzeDocument, analyzeUploadedDocument } from "../api/complianceApi";
+import { analyzeDocument, analyzeUploadedDocument, listSavedSessions } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
-import { FindingsPanel } from "../features/compliance/FindingsPanel";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
+import type { SavedSession } from "@complylens/shared";
 
-const complianceSessions = [
-  { title: "Vendor Contract Review", type: "Document", status: "3 open findings" },
-  { title: "Sales Outreach Audit", type: "Email", status: "1 rewrite pending" },
-  { title: "HR Handbook Scan", type: "Policy", status: "Ready" },
-  { title: "Gmail Draft Analysis", type: "Extension", status: "Live channel" }
-];
+type SessionHistoryItem = {
+  id: string;
+  title: string;
+  source: string;
+  risk: string;
+  time: string;
+};
+
+const emptyReport = runDemoComplianceCheck("");
+const departments = ["All", "Legal", "Sales", "HR", "Security", "Finance"];
 
 export function DashboardPage() {
-  const [draft, setDraft] = useState(demoDocument);
-  const [documentName, setDocumentName] = useState("Vendor_Email_Draft.txt");
-  const [report, setReport] = useState<ComplianceReport>(() => runDemoComplianceCheck(demoDocument));
-  const [activeId, setActiveId] = useState(report.violations[0]?.id ?? "");
+  const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
+  const [draft, setDraft] = useState("");
+  const [documentName, setDocumentName] = useState("No file selected");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [report, setReport] = useState<ComplianceReport>(emptyReport);
+  const [hasRun, setHasRun] = useState(false);
+  const [activeId, setActiveId] = useState("");
   const [hiddenIds, setHiddenIds] = useState<string[]>([]);
-  const [severityFilter, setSeverityFilter] = useState("all");
-  const [threshold, setThreshold] = useState(0.62);
   const [loading, setLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
+  const [department, setDepartment] = useState("Sales");
+  const [team, setTeam] = useState("Outbound");
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
+  const [history, setHistory] = useState<SessionHistoryItem[]>([
+    { id: "hist-1", title: "Sales email draft", source: "Email text", risk: "2 issues fixed", time: "Today" },
+    { id: "hist-2", title: "Vendor NDA", source: "DOCX upload", risk: "Reviewed", time: "Yesterday" },
+    { id: "hist-3", title: "HR announcement", source: "Pasted text", risk: "No issues", time: "May 12" }
+  ]);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const visibleViolations = report.violations.filter((violation) => {
-    if (hiddenIds.includes(violation.id)) return false;
-    if (severityFilter !== "all" && violation.severity !== severityFilter) return false;
-    return violation.confidence >= threshold;
-  });
+  const visibleViolations = report.violations.filter((violation) => !hiddenIds.includes(violation.id));
   const activeViolation = visibleViolations.find((violation) => violation.id === activeId) ?? visibleViolations[0];
+  const canAnalyze = Boolean(selectedFile || draft.trim());
 
-  async function analyze(nextDraft = draft) {
+  useEffect(() => {
+    void refreshSessions();
+  }, [department]);
+
+  async function refreshSessions() {
+    try {
+      setSavedSessions(await listSavedSessions(department));
+    } catch {
+      setSavedSessions([]);
+    }
+  }
+
+  function recordHistory(nextReport: ComplianceReport, source: string) {
+    const risk = nextReport.violations.length
+      ? `${nextReport.violations.length} issue${nextReport.violations.length === 1 ? "" : "s"} found`
+      : "No issues";
+
+    setHistory((items) => [
+      {
+        id: crypto.randomUUID(),
+        title: documentName === "No file selected" ? "Typed compliance check" : documentName,
+        source,
+        risk,
+        time: "Just now"
+      },
+      ...items.slice(0, 5)
+    ]);
+  }
+
+  async function runAnalysis() {
+    if (!canAnalyze) {
+      setNotice({ kind: "error", text: "Upload a file or type text before running analysis." });
+      return;
+    }
+
     setLoading(true);
     setNotice(null);
     try {
-      const nextReport = await analyzeDocument({ text: nextDraft, documentName, threshold });
+      if (selectedFile) {
+        const result = await analyzeUploadedDocument(selectedFile, 0.62, department, team);
+        setDraft(result.text);
+        setReport(result.report);
+        setHasRun(true);
+        setActiveId(result.report.violations[0]?.id ?? "");
+        setHiddenIds([]);
+        recordHistory(result.report, selectedFile.name.split(".").pop()?.toUpperCase() ?? "Upload");
+        void refreshSessions();
+        setNotice({ kind: "success", text: `Analysis completed for ${selectedFile.name}.` });
+        return;
+      }
+
+      const nextReport = await analyzeDocument({ text: draft, documentName, threshold: 0.62, department, team });
       setReport(nextReport);
+      setHasRun(true);
       setActiveId(nextReport.violations[0]?.id ?? "");
       setHiddenIds([]);
-      setNotice({ kind: "success", text: "Backend analysis completed with policy citations." });
+      recordHistory(nextReport, "Typed text");
+      void refreshSessions();
+      setNotice({ kind: "success", text: "Analysis completed with policy citations." });
     } catch (error) {
-      const fallback = runDemoComplianceCheck(nextDraft);
+      const fallback = runDemoComplianceCheck(draft);
       setReport(fallback);
+      setHasRun(true);
       setActiveId(fallback.violations[0]?.id ?? "");
+      setHiddenIds([]);
+      recordHistory(fallback, selectedFile ? "Upload fallback" : "Text fallback");
       setNotice({
         kind: "error",
-        text: `Backend unavailable, showing seeded demo analysis. ${error instanceof Error ? error.message.slice(0, 120) : ""}`
+        text: `Backend unavailable, showing local analysis. ${error instanceof Error ? error.message.slice(0, 120) : ""}`
       });
     } finally {
       setLoading(false);
     }
   }
 
-  async function uploadDocument(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  async function selectFile(file: File) {
+    setSelectedFile(file);
     setDocumentName(file.name);
-    if (file.name.toLowerCase().endsWith(".txt")) {
-      const text = await file.text();
-      setDraft(text);
-      await analyze(text);
+    setHasRun(false);
+    setReport(emptyReport);
+    setActiveId("");
+    setHiddenIds([]);
+    setNotice({ kind: "success", text: `${file.name} is ready. Click Run Analysis to scan it.` });
+
+    if (/\.(txt|md|html|htm|eml|rtf)$/i.test(file.name)) {
+      setDraft(await file.text());
+    } else {
+      setDraft("");
+    }
+  }
+
+  function uploadDocument(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) {
+      void selectFile(file);
+    }
+    event.target.value = "";
+  }
+
+  function handleDrag(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.type === "dragenter" || event.type === "dragover") {
+      event.dataTransfer.dropEffect = "copy";
+      setDragActive(true);
+    }
+    if (event.type === "dragleave") {
+      setDragActive(false);
+    }
+  }
+
+  function dropDocument(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setDragActive(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      void selectFile(file);
       return;
     }
-    setLoading(true);
-    try {
-      const result = await analyzeUploadedDocument(file, threshold);
-      setDraft(result.text);
-      setReport(result.report);
-      setActiveId(result.report.violations[0]?.id ?? "");
-      setHiddenIds([]);
-      setNotice({ kind: "success", text: `Parsed and analyzed ${file.name}.` });
-    } catch (error) {
-      setNotice({
-        kind: "error",
-        text: `Could not parse ${file.name}. Start the backend and install PDF/DOCX dependencies. ${error instanceof Error ? error.message.slice(0, 120) : ""}`
-      });
-    } finally {
-      setLoading(false);
-    }
+    setNotice({ kind: "error", text: "Drop one supported document file here." });
   }
 
-  function pasteText() {
-    setDraft(demoDocument);
-    setDocumentName("Pasted_Demo_Draft.txt");
-    void analyze(demoDocument);
+  function startNextUpload() {
+    setDraft("");
+    setDocumentName("No file selected");
+    setSelectedFile(null);
+    setReport(emptyReport);
+    setHasRun(false);
+    setActiveId("");
+    setHiddenIds([]);
+    setNotice(null);
+    fileRef.current?.click();
   }
 
   function applyViolationRewrite(violation: Violation) {
@@ -103,100 +193,162 @@ export function DashboardPage() {
     setNotice({ kind: "success", text: "Rewrite applied to the document draft." });
   }
 
+  function exportReportPdf() {
+    if (!hasRun) return;
+    const pdf = [
+      "%PDF-1.4",
+      "1 0 obj<<>>endobj",
+      "2 0 obj<< /Length 520 >>stream",
+      `BT /F1 14 Tf 50 760 Td (ComplyLens Analysis Report) Tj 0 -24 Td (Document: ${documentName.slice(0, 70)}) Tj 0 -20 Td (Department: ${department} / ${team}) Tj 0 -20 Td (Score: ${report.score} | Findings: ${visibleViolations.length}) Tj 0 -24 Td (Summary: ${(report.summary ?? "No summary").slice(0, 110)}) Tj ET`,
+      "endstream endobj",
+      "3 0 obj<< /Type /Page /Parent 4 0 R /Contents 2 0 R /Resources<< /Font<< /F1<< /Type /Font /Subtype /Helvetica /BaseFont /Helvetica >> >> >> >>endobj",
+      "4 0 obj<< /Type /Pages /Kids[3 0 R] /Count 1 >>endobj",
+      "5 0 obj<< /Type /Catalog /Pages 4 0 R >>endobj",
+      "xref 0 6",
+      "0000000000 65535 f ",
+      "0000000009 00000 n ",
+      "0000000029 00000 n ",
+      "0000000600 00000 n ",
+      "0000000750 00000 n ",
+      "0000000810 00000 n ",
+      "trailer<< /Root 5 0 R /Size 6 >>",
+      "startxref",
+      "870",
+      "%%EOF"
+    ].join("\n");
+    const url = URL.createObjectURL(new Blob([pdf], { type: "application/pdf" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${documentName.replace(/\W+/g, "-") || "analysis-report"}.pdf`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  if (role === "admin") {
+    return (
+      <WorkspaceShell role="admin">
+        <section className="ops-dashboard simple-dashboard">
+          <div className="workspace-command-bar compact-command-bar">
+            <div>
+              <h1>Admin Dashboard</h1>
+              <p>Manage policies, employee access, audit events, and real-world integration setup from one control surface.</p>
+            </div>
+            <div className="workspace-command-status">
+              <span><ShieldCheck size={15} /> Admin mode</span>
+              <span><MailCheck size={15} /> Extension ready</span>
+            </div>
+          </div>
+
+          <div className="admin-dashboard-grid">
+            <Link className="admin-dashboard-card primary" to="/policies">
+              <Database size={20} />
+              <span>Policy memory</span>
+              <strong>829 chunks indexed</strong>
+              <small>Upload company rules and monitor retrieval health.</small>
+            </Link>
+            <Link className="admin-dashboard-card" to="/audit">
+              <History size={20} />
+              <span>Audit trail</span>
+              <strong>7 open events</strong>
+              <small>Review scans, rewrites, uploads, and extension activity.</small>
+            </Link>
+            <Link className="admin-dashboard-card" to="/settings">
+              <KeyRound size={20} />
+              <span>Integrations</span>
+              <strong>API + Extension</strong>
+              <small>Generate demo API keys and configure extension/webhook setup.</small>
+            </Link>
+            <Link className="admin-dashboard-card" to="/settings">
+              <UsersRound size={20} />
+              <span>Team access</span>
+              <strong>12 employees</strong>
+              <small>Invite employees and keep policy upload admin-only.</small>
+            </Link>
+          </div>
+
+          <div className="admin-ops-grid">
+            <section className="ops-card wide">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Risk overview</span>
+                  <h2>Business value this month</h2>
+                </div>
+                <BarChart3 size={20} />
+              </div>
+              <div className="admin-report-grid">
+                <div><BarChart3 size={17} /><span>Risk stopped</span><strong>38</strong><small>messages blocked before sending</small></div>
+                <div><ShieldCheck size={17} /><span>Rewrite adoption</span><strong>74%</strong><small>safe rewrites accepted</small></div>
+                <div><AlertTriangle size={17} /><span>Open escalations</span><strong>7</strong><small>need reviewer decision</small></div>
+              </div>
+            </section>
+            <section className="ops-card">
+              <div className="admin-section-head">
+                <div>
+                  <span className="eyebrow">Next action</span>
+                  <h2>Deploy Gmail extension</h2>
+                </div>
+                <MailCheck size={20} />
+              </div>
+              <div className="insight-list">
+                <div><CheckCircle2 size={16} /> Build extension package</div>
+                <div><KeyRound size={16} /> Add API endpoint in Admin</div>
+                <div><UsersRound size={16} /> Assign employees after install</div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </WorkspaceShell>
+    );
+  }
+
   return (
     <WorkspaceShell>
       <section className="ops-dashboard work-dashboard">
-        <div className="workspace-command-bar">
+        <div className="workspace-command-bar compact-command-bar">
           <div>
             <h1>Compliance Workspace</h1>
-            <p>Analyze communication, inspect policy reasoning, and approve safe rewrites from one active session.</p>
+            <p>Upload a file or write text, run one analysis, then review the full result in a focused workspace.</p>
           </div>
-          <div className="workspace-command-status">
-            <span><ShieldCheck size={15} /> Policy memory active</span>
-            <span><MailCheck size={15} /> Gmail ready</span>
-          </div>
+          <button className="secondary-action-button" onClick={startNextUpload} type="button">
+            <RefreshCw size={15} />
+            Upload next
+          </button>
         </div>
 
-        {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
-
-        <div className="work-grid">
-          <aside className="session-rail">
-            <div className="rail-header">
-              <strong>Compliance Sessions</strong>
-              <span>{complianceSessions.length} active</span>
-            </div>
-            <div className="session-list">
-              {complianceSessions.map((session, index) => (
-                <button className={index === 0 ? "active" : ""} key={session.title} type="button">
-                  <span>{session.type}</span>
-                  <strong>{session.title}</strong>
-                  <small>{session.status}</small>
-                </button>
-              ))}
-            </div>
-            <div
-              className="rail-dropzone"
-              onClick={() => fileRef.current?.click()}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  fileRef.current?.click();
-                }
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              <Paperclip size={16} />
-              <strong>Add document</strong>
-              <span>PDF, DOCX, EML, HTML, TXT</span>
-            </div>
-          </aside>
-
-          <section className="analysis-workbench">
-            <div className="codex-workspace">
-              <div className="codex-chat-head">
-                <div>
-                  <strong>Active Review</strong>
-                  <span>Vendor Contract Review</span>
+        <div className="employee-workspace-grid">
+          <section className={`employee-analysis-panel ${hasRun ? "has-results" : ""}`}>
+            <div className="workspace-input-stage" onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={dropDocument}>
+              <div className="department-filter-row">
+                <label>
+                  Department
+                  <select value={department} onChange={(event) => setDepartment(event.target.value)}>
+                    {departments.map((item) => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Team
+                  <input value={team} onChange={(event) => setTeam(event.target.value)} />
+                </label>
+              </div>
+              <div
+                className={`upload-dropzone-large ${selectedFile ? "is-ready" : ""} ${dragActive ? "is-dragging" : ""}`}
+                onClick={() => fileRef.current?.click()}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={dropDocument}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="upload-icon-ring">
+                  <UploadCloud size={34} />
                 </div>
-                <div className="scan-state">
-                  <span className={loading ? "pulse-dot" : "pulse-dot idle"} />
-                  {loading ? "Checking" : `${visibleViolations.length} issues`}
-                </div>
+                <strong>{selectedFile ? selectedFile.name : "Drop a document here"}</strong>
+                <span>PDF, DOCX, DOC, EML, HTML, RTF, TXT, or pasted text</span>
+                <small>{dragActive ? "Release to attach this file" : selectedFile ? "File ready for analysis" : "Click the box or drag a file onto it"}</small>
               </div>
 
-              <div className="codex-thread">
-                <article className="thread-bubble thread-bubble--system">
-                  <span className="thread-role">ComplyLens</span>
-                  <p>Scanning communication against active policy memory. Findings will include policy references, severity, and rewrite options.</p>
-                </article>
-                <article className="thread-bubble thread-bubble--user">
-                  <span className="thread-role">You</span>
-                  <p>{documentName}</p>
-                </article>
-                <article className="thread-bubble thread-bubble--assistant">
-                  <span className="thread-role">Result</span>
-                  <p>
-                    {activeViolation
-                      ? `I found ${visibleViolations.length} issue${visibleViolations.length === 1 ? "" : "s"}. The main risk is in ${activeViolation.policySection}.`
-                      : report.summary ?? "No risky language found."}
-                  </p>
-                  {activeViolation && (
-                    <div className="thread-summary-grid">
-                      <div>
-                        <strong>AI reasoning</strong>
-                        <span>{activeViolation.explanation}</span>
-                      </div>
-                      <div>
-                        <strong>Suggested rewrite</strong>
-                        <span>{activeViolation.rewrite}</span>
-                      </div>
-                    </div>
-                  )}
-                </article>
-              </div>
-
-              <div className="codex-composer">
+              <div className="workspace-text-entry">
                 <div className="composer-meta">
                   <span>
                     <FileText size={16} />
@@ -205,69 +357,128 @@ export function DashboardPage() {
                   <span>{draft.trim().split(/\s+/).filter(Boolean).length} words</span>
                 </div>
                 <textarea
-                  aria-label="Write message or document"
+                  aria-label="Write or paste text for compliance analysis"
                   className="composer-textarea"
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                      event.preventDefault();
-                      void analyze();
-                    }
+                  onChange={(event) => {
+                    setDraft(event.target.value);
+                    setSelectedFile(null);
+                    setDocumentName("Typed compliance check");
+                    setHasRun(false);
                   }}
-                  placeholder="Type your message here, paste a document, or attach a file."
+                  placeholder="Write or paste text here if you do not want to upload a file."
                   value={draft}
                 />
-                <div className="composer-actions">
-                  <button aria-label="Upload file" className="icon-action-button" onClick={() => fileRef.current?.click()} type="button">
-                    <Paperclip size={16} />
-                  </button>
-                  <button onClick={pasteText} type="button">Use demo</button>
-                  <button className="primary-work-action send-action-button" disabled={loading} onClick={() => void analyze()} type="button">
-                    <ArrowUp size={16} />
-                    {loading ? "Checking..." : "Run check"}
-                  </button>
-                </div>
+              </div>
+
+              <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
+
+              <div className="analysis-action-row">
+                <button className="secondary-action-button" onClick={() => fileRef.current?.click()} type="button">
+                  <Paperclip size={16} />
+                  Choose file
+                </button>
+                <button className="primary-work-action run-analysis-button" disabled={loading || !canAnalyze} onClick={() => void runAnalysis()} type="button">
+                  <ArrowUp size={16} />
+                  {loading ? "Running analysis..." : "Run Analysis"}
+                </button>
               </div>
             </div>
 
-            <div className="workflow-strip">
-              <div><FileText size={15} /><span>Original captured</span></div>
-              <div><ShieldCheck size={15} /><span>Policies retrieved</span></div>
-              <div><Wand2 size={15} /><span>Rewrite generated</span></div>
-            </div>
-
-            <div className="document-card">
-              <div className="document-toolbar">
-                <span>
-                  Compare the original text with highlighted issues
-                </span>
-                <div>
-                  <button aria-label="Upload file" className="icon-action-button" onClick={() => fileRef.current?.click()} type="button">
-                    <Paperclip size={15} />
+            {hasRun && (
+              <section className="analysis-results">
+                <div className="analysis-results-head">
+                  <div>
+                    <span className="eyebrow">Analysis result</span>
+                    <h2>{visibleViolations.length ? `${visibleViolations.length} policy issue${visibleViolations.length === 1 ? "" : "s"} found` : "No risky language found"}</h2>
+                  </div>
+                  <button className="secondary-action-button" onClick={startNextUpload} type="button">
+                    <UploadCloud size={15} />
+                    Upload another
                   </button>
-                  <button disabled={loading} onClick={() => void analyze()} type="button">{loading ? "Checking..." : "Run check"}</button>
+                  <button className="secondary-action-button" onClick={exportReportPdf} type="button">
+                    <Download size={15} />
+                    Export PDF
+                  </button>
                 </div>
-                <input accept=".txt,.md,.pdf,.doc,.docx,.eml,.html,.htm,.rtf" hidden onChange={uploadDocument} ref={fileRef} type="file" />
+
+                <div className="result-workspace">
+                  <div className="result-document-pane">
+                    <div className="result-pane-title">
+                      <FileText size={16} />
+                      Original document with highlighted risks
+                    </div>
+                    <HighlightedEditor draft={draft} mode="preview" onSelectViolation={setActiveId} violations={visibleViolations} />
+                  </div>
+
+                  <div className="result-cards-pane">
+                    {(visibleViolations.length ? visibleViolations : [activeViolation]).filter(Boolean).map((violation) => (
+                      <article className={violation?.id === activeViolation?.id ? "result-finding-card active" : "result-finding-card"} key={violation!.id}>
+                        <div className="finding-card-top">
+                          <span><AlertTriangle size={14} /> {violation!.severity}</span>
+                          <small>{Math.round(violation!.confidence * 100)}% confidence</small>
+                        </div>
+                        <h3>{violation!.policySection}</h3>
+                        <p>{violation!.explanation}</p>
+                        <div className="rewrite-box">
+                          <strong>Suggested rewrite</strong>
+                          <span>{violation!.rewrite}</span>
+                        </div>
+                        <button onClick={() => applyViolationRewrite(violation!)} type="button">
+                          <CheckCircle2 size={15} />
+                          Apply safe rewrite
+                        </button>
+                      </article>
+                    ))}
+                    {!visibleViolations.length && (
+                      <article className="result-finding-card">
+                        <div className="finding-card-top">
+                          <span><CheckCircle2 size={14} /> Clear</span>
+                          <small>Ready to send</small>
+                        </div>
+                        <h3>No active violations</h3>
+                        <p>This draft does not contain the seeded risky language checks.</p>
+                      </article>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+            {loading && (
+              <div className="analysis-skeleton" aria-label="Analysis loading">
+                <span />
+                <span />
+                <span />
               </div>
-              <HighlightedEditor draft={draft} mode="preview" onSelectViolation={setActiveId} violations={visibleViolations} />
-            </div>
+            )}
           </section>
 
-          <FindingsPanel
-            activeViolation={activeViolation}
-            hiddenCount={hiddenIds.length}
-            loading={loading}
-            onApply={applyViolationRewrite}
-            onDismiss={(id) => setHiddenIds((ids) => [...new Set([...ids, id])])}
-            onFilter={setSeverityFilter}
-            onMarkSafe={(id) => setHiddenIds((ids) => [...new Set([...ids, id])])}
-            onSelectViolation={setActiveId}
-            onThreshold={setThreshold}
-            report={report}
-            severityFilter={severityFilter}
-            threshold={threshold}
-            violations={visibleViolations}
-          />
+          <aside className="employee-history-panel">
+            {notice && (
+              <div className="history-notice" role="status">
+                <NoticeBox notice={notice} onClose={() => setNotice(null)} />
+              </div>
+            )}
+            <div className="rail-header">
+              <strong><History size={16} /> Session history</strong>
+              <span>{history.length} checks</span>
+            </div>
+            <div className="history-list">
+              {savedSessions.map((session) => (
+                <button key={session.id} type="button">
+                  <strong>{session.documentName}</strong>
+                  <span>{session.department} · {session.team}</span>
+                  <small>{session.flaggedSections} issues · score {session.score}</small>
+                </button>
+              ))}
+              {history.map((item) => (
+                <button key={item.id} type="button">
+                  <strong>{item.title}</strong>
+                  <span>{item.source}</span>
+                  <small>{item.risk} · {item.time}</small>
+                </button>
+              ))}
+            </div>
+          </aside>
         </div>
       </section>
     </WorkspaceShell>

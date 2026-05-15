@@ -271,8 +271,10 @@ a { color: inherit; }
 }
 
 .notice {
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 12px;
   padding: 10px 12px;
   border: 1px solid rgba(79, 70, 229, 0.18);
@@ -280,6 +282,13 @@ a { color: inherit; }
   color: #3730a3;
   background: rgba(238, 242, 255, 0.78);
   line-height: 1.45;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.09);
+}
+.notice span {
+  min-width: 0;
+}
+.notice-icon {
+  flex: 0 0 auto;
 }
 .notice.error { color: #991b1b; border-color: rgba(239, 68, 68, 0.22); background: rgba(254, 242, 242, 0.86); }
 .notice.success { color: #047857; border-color: rgba(16, 185, 129, 0.24); background: rgba(236, 253, 245, 0.86); }

@@ -7,6 +7,7 @@ import { TopNav } from "../layouts/TopNav";
 export function AuthPage({ mode }: { mode: "login" | "signup" }) {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [role, setRole] = useState<"admin" | "employee">("employee");
   const isSignup = mode === "signup";
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -18,6 +19,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
       setError("Use a work email and a password with at least 6 characters.");
       return;
     }
+    window.localStorage.setItem("complylens-role", role);
     navigate("/dashboard");
   }
 
@@ -35,10 +37,20 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             <div className="auth-icon">{isSignup ? <KeyRound size={20} /> : <LockKeyhole size={20} />}</div>
             <div>
               <h2>{isSignup ? "Create workspace" : "Welcome back"}</h2>
-              <p>{isSignup ? "Configure policy review access." : "Continue reviewing enterprise communication."}</p>
+              <p>{isSignup ? "Choose the right access type." : "Continue with your assigned role."}</p>
             </div>
           </div>
           <form className="auth-form" onSubmit={submit}>
+            <div className="auth-role-grid" role="group" aria-label="Choose account type">
+              <button className={role === "employee" ? "active" : ""} onClick={() => setRole("employee")} type="button">
+                <strong>Employee</strong>
+                <span>Upload files, run checks, and view history.</span>
+              </button>
+              <button className={role === "admin" ? "active" : ""} onClick={() => setRole("admin")} type="button">
+                <strong>Admin</strong>
+                <span>Manage policies, users, audit, and simple reports.</span>
+              </button>
+            </div>
             {isSignup && (
               <label>
                 Company name
@@ -55,7 +67,7 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             </label>
             {error && <div className="notice error">{error}</div>}
             <button className="auth-submit" type="submit">
-              {isSignup ? "Create workspace" : "Login"}
+              {isSignup ? (role === "admin" ? "Create admin workspace" : "Create employee account") : `Login as ${role}`}
               <ArrowRight size={16} />
             </button>
           </form>
@@ -64,8 +76,15 @@ export function AuthPage({ mode }: { mode: "login" | "signup" }) {
             Demo
             <span />
           </div>
-          <button className="demo-button" onClick={() => navigate("/dashboard")} type="button">
-            Open seeded demo workspace
+          <button
+            className="demo-button"
+            onClick={() => {
+              window.localStorage.setItem("complylens-role", role);
+              navigate("/dashboard");
+            }}
+            type="button"
+          >
+            Open {role} demo workspace
           </button>
           <p className="auth-switch">
             {isSignup ? "Already have access?" : "Need a workspace?"}{" "}
