@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import os
 import re
 import uuid
 from collections import Counter
@@ -66,15 +67,36 @@ def cosine(a: Counter[str], b: Counter[str]) -> float:
 
 
 def chunk_text(text: str, max_words: int = 90) -> list[str]:
-    paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
-    chunks: list[str] = []
-    for paragraph in paragraphs or [text]:
-        words = paragraph.split()
-        for index in range(0, max(len(words), 1), max_words):
-            chunk = " ".join(words[index : index + max_words]).strip()
-            if chunk:
-                chunks.append(chunk)
-    return chunks
+    """Chunk text using recursive character splitter for better semantic boundaries.
+    
+    Uses separators in order of preference: paragraph breaks, line breaks, words, chars.
+    This respects document structure better than simple word count splitting.
+    Integrated from Deepa's RAG pipeline for improved policy chunking.
+    """
+    try:
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
+        
+        chunk_size = int(os.getenv("RAG_CHUNK_SIZE", "600"))
+        chunk_overlap = int(os.getenv("RAG_CHUNK_OVERLAP", "60"))
+        
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            length_function=len,
+            separators=["\n\n", "\n", " ", ""],
+        )
+        return splitter.split_text(text)
+    except ImportError:
+        # Fallback to word-based chunking if langchain_text_splitters not available
+        paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
+        chunks: list[str] = []
+        for paragraph in paragraphs or [text]:
+            words = paragraph.split()
+            for index in range(0, max(len(words), 1), max_words):
+                chunk = " ".join(words[index : index + max_words]).strip()
+                if chunk:
+                    chunks.append(chunk)
+        return chunks
 
 
 class PolicyStore:

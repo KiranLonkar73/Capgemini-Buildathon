@@ -101,7 +101,10 @@ async def upload_policy(
     owner: str = Form("Compliance"),
     service: ComplianceService = Depends(get_service),
 ) -> dict[str, Any]:
-    text = await extract_text_from_upload(file)
+    try:
+        text = await extract_text_from_upload(file)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not text.strip():
         raise HTTPException(status_code=400, detail="Uploaded policy did not contain extractable text.")
 
@@ -142,7 +145,9 @@ def update_employee_status(employee_id: str, status: str, service: ComplianceSer
     try:
         return service.update_employee_status(employee_id, status)
     except ValueError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        detail = str(exc)
+        status_code = 400 if detail == "Invalid status" else 404
+        raise HTTPException(status_code=status_code, detail=detail) from exc
 
 
 @app.get("/sessions")

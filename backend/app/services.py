@@ -10,6 +10,9 @@ from .policy_store import PolicyStore
 from .storage import JsonStateStore
 
 
+EMPLOYEE_STATUSES = {"invited", "active", "disabled"}
+
+
 class ComplianceService:
     def __init__(self, data_path: Path) -> None:
         self.storage = JsonStateStore(data_path)
@@ -51,6 +54,9 @@ class ComplianceService:
 
     def analyze(self, payload: AnalyzeRequest) -> ComplianceReport:
         threshold = payload.threshold if payload.threshold is not None else self.settings.threshold
+        default_threshold = CompanySettings().threshold
+        if threshold == default_threshold and self.settings.threshold != default_threshold:
+            threshold = self.settings.threshold
         report = analyze_text(payload.text, self.policy_store, threshold)
         self.save_session(payload, report)
         return report
@@ -105,6 +111,8 @@ class ComplianceService:
         ]
 
     def update_employee_status(self, employee_id: str, status: str) -> Employee:
+        if status not in EMPLOYEE_STATUSES:
+            raise ValueError("Invalid status")
         for index, employee in enumerate(self.employees):
             if employee.id == employee_id:
                 updated = employee.model_copy(update={"status": status})

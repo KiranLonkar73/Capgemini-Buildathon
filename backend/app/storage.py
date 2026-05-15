@@ -18,7 +18,13 @@ class JsonStateStore:
         references = state.get("policy_references")
         if not references:
             return None
-        return [PolicyReference.model_validate(reference) for reference in references]
+        parsed: list[PolicyReference] = []
+        for reference in references:
+            try:
+                parsed.append(PolicyReference.model_validate(reference))
+            except Exception:
+                continue
+        return parsed or None
 
     def save_references(self, references: list[PolicyReference]) -> None:
         state = self._read()
@@ -27,9 +33,13 @@ class JsonStateStore:
 
     def load_settings(self) -> CompanySettings:
         state = self._read()
-        if not state.get("settings"):
+        raw = state.get("settings")
+        if not raw:
             return CompanySettings()
-        return CompanySettings.model_validate(state["settings"])
+        try:
+            return CompanySettings.model_validate(raw)
+        except Exception:
+            return CompanySettings()
 
     def save_settings(self, settings: CompanySettings) -> None:
         state = self._read()
@@ -37,7 +47,13 @@ class JsonStateStore:
         self._write(state)
 
     def load_employees(self) -> list[Employee]:
-        return [Employee.model_validate(item) for item in self._read().get("employees", [])]
+        employees: list[Employee] = []
+        for item in self._read().get("employees", []):
+            try:
+                employees.append(Employee.model_validate(item))
+            except Exception:
+                continue
+        return employees
 
     def save_employees(self, employees: list[Employee]) -> None:
         state = self._read()
@@ -45,7 +61,13 @@ class JsonStateStore:
         self._write(state)
 
     def load_sessions(self) -> list[SavedSession]:
-        return [SavedSession.model_validate(item) for item in self._read().get("sessions", [])]
+        sessions: list[SavedSession] = []
+        for item in self._read().get("sessions", []):
+            try:
+                sessions.append(SavedSession.model_validate(item))
+            except Exception:
+                continue
+        return sessions
 
     def save_sessions(self, sessions: list[SavedSession]) -> None:
         state = self._read()
@@ -53,7 +75,13 @@ class JsonStateStore:
         self._write(state)
 
     def load_audit_events(self) -> list[AuditEvent]:
-        return [AuditEvent.model_validate(item) for item in self._read().get("audit_events", [])]
+        events: list[AuditEvent] = []
+        for item in self._read().get("audit_events", []):
+            try:
+                events.append(AuditEvent.model_validate(item))
+            except Exception:
+                continue
+        return events
 
     def save_audit_events(self, events: list[AuditEvent]) -> None:
         state = self._read()

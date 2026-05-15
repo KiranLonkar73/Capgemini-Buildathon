@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import subprocess
 import tempfile
+import sys
 from email import policy
 from email.parser import BytesParser
 from html import unescape
@@ -80,12 +81,66 @@ async def extract_text_from_upload(file: UploadFile) -> str:
 
     if filename.endswith(".pdf"):
         try:
+            try:
+                import fitz
+            except ImportError:
+                from pypdf import PdfReader
+            else:
+                return _extract_pdf_with_pymupdf(data)
+        except Exception:
+            # Fall back to pypdf
+            try:
+                from pypdf import PdfReader
+            except ImportError as exc:
+                raise RuntimeError("PDF parsing requires pypdf. Install backend/requirements.txt.") from exc
+
+        try:
             from pypdf import PdfReader
-        except ImportError as exc:  # pragma: no cover - dependency guard
+        except ImportError as exc:
             raise RuntimeError("PDF parsing requires pypdf. Install backend/requirements.txt.") from exc
 
         reader = PdfReader(BytesIO(data))
         return "\n\n".join(page.extract_text() or "" for page in reader.pages).strip()
+
+
+def _extract_pdf_with_pymupdf(data: bytes) -> str:
+    """Extract PDF using PyMuPDF with block-sorting for better reading order.
+    
+    Integrated from legacy backend for improved PDF text extraction.
+    Sorts blocks by vertical then horizontal coordinate to preserve reading order.
+    """
+    import fitz
+    
+    doc = fitz.open(stream=data, filetype="pdf")
+    pages_text = []
+    
+    for page_num in range(len(doc)):
+        page = doc.load_page(page_num)
+        blocks = page.get_text("blocks")
+        
+        # Sort blocks by y0 (vertical) then x0 (horizontal) to maintain reading order
+        try:
+            blocks_sorted = sorted(blocks, key=lambda b: (b[1], b[0]))
+        except Exception:
+            blocks_sorted = blocks
+        
+        texts = []
+        for block in blocks_sorted:
+            # Block format: (x0, y0, x1, y1, text, block_no, block_type)
+            try:
+                text = block[4] if len(block) > 4 else str(block)
+            except (IndexError, TypeError):
+                text = str(block)
+            
+            if isinstance(text, str) and text.strip():
+                texts.append(text.strip())
+        
+        page_text = "\n".join(texts)
+        if page_text.strip():
+            pages_text.append(page_text)
+    
+    doc.close()
+    return "\n\n".join(pages_text).strip()
 
     if filename.endswith(".docx"):
         try:
@@ -97,6 +152,8 @@ async def extract_text_from_upload(file: UploadFile) -> str:
         return "\n".join(paragraph.text for paragraph in document.paragraphs).strip()
 
     if filename.endswith((".doc", ".rtf")):
+        if sys.platform != "darwin":
+            raise RuntimeError("DOC or RTF parsing requires macOS textutil. Convert to DOCX or PDF.")
         try:
             return _extract_via_textutil(data, suffix=Path(filename).suffix)
         except (FileNotFoundError, subprocess.CalledProcessError) as exc:
