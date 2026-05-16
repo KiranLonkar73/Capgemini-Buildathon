@@ -4,6 +4,8 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,11 +21,15 @@ from .models import (
     RewriteRequest,
     RewriteResponse,
 )
+from .analyzer import rewrite_text_for_compliance
 from .parser import extract_text_from_upload
 from .services import ComplianceService
 
 logger = logging.getLogger("complylens")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+
+env_path = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(env_path)
 
 app = FastAPI(title="ComplyLens API", version="0.2.1")
 
@@ -49,8 +55,10 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "http://localhost:5175",
+        "http://127.0.0.1:5175",
     ],
-    allow_origin_regex=r"^chrome-extension://.*$",
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1):\d+$|^chrome-extension://.*$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -206,19 +214,6 @@ async def rewrite(payload: RewriteRequest) -> RewriteResponse:
     if not text:
         raise HTTPException(status_code=400, detail="Text is required for rewrite.")
 
-    context = (payload.policyContext or "").strip()
-    lowered = text.lower()
-
-    if "customer" in lowered or "account" in lowered:
-        rewrite_text = "Please use the approved secure transfer workflow once the recipient is authorized."
-    elif "salary" in lowered or "compensation" in lowered:
-        rewrite_text = "Please review compensation information only in the approved HR system."
-    elif any(term in lowered for term in ("guarantee", "promise", "refund")):
-        rewrite_text = "Our current target remains subject to final confirmation and approved commercial terms."
-    else:
-        rewrite_text = f"Rewritten for compliance: {text}"
-
-    if context:
-        rewrite_text = f"{rewrite_text} Policy basis: {context[:140]}"
+    rewrite_text = rewrite_text_for_compliance(text, payload.policyContext)
 
     return RewriteResponse(rewrite=rewrite_text)

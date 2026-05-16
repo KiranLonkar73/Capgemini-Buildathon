@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Bot, CheckCircle2, Download, FileText, GitBranch, MailCheck, ShieldCheck } from "lucide-react";
 import { PanelTitle } from "../components/common/PanelTitle";
-import { activityFeed, aiInsights } from "../data/productData";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
-import { listAuditEvents, markAuditEventReviewed } from "../api/complianceApi";
-import type { AuditEvent } from "@complylens/shared";
+import { listAuditEvents, listSavedSessions, markAuditEventReviewed } from "../api/complianceApi";
+import type { AuditEvent, SavedSession } from "@complylens/shared";
 
 const employeeHistory = [
   { title: "Vendor NDA scan", detail: "DOCX upload checked. 2 risky clauses rewritten.", time: "Today" },
@@ -13,33 +12,35 @@ const employeeHistory = [
 ];
 
 type AuditEventRow = AuditEvent & { tone?: string };
-
-const seededAuditEvents: AuditEventRow[] = activityFeed.map((activity, index) => ({
-  ...activity,
-  id: `audit-${index}`,
-  status: index < 2 ? "open" as const : "reviewed" as const,
-  owner: index % 2 === 0 ? "Legal" : "Compliance",
-  department: index % 2 === 0 ? "Legal" : "Sales",
-  eventType: "scan" as const
-}));
 const departments = ["All", "Legal", "Sales", "HR", "Security", "Finance"];
 
 export function ActivityPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [filter, setFilter] = useState<"all" | "open" | "reviewed">("all");
   const [department, setDepartment] = useState("All");
-  const [auditEvents, setAuditEvents] = useState<AuditEventRow[]>(seededAuditEvents);
+  const [auditEvents, setAuditEvents] = useState<AuditEventRow[]>([]);
+  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
 
   useEffect(() => {
     if (role === "admin") void refreshAuditEvents();
+    if (role === "employee") void refreshSavedSessions();
   }, [role, department]);
 
   async function refreshAuditEvents() {
     try {
       const events = await listAuditEvents(department);
-      setAuditEvents(events.length ? events : seededAuditEvents);
+      setAuditEvents(events);
     } catch {
-      setAuditEvents(seededAuditEvents);
+      setAuditEvents([]);
+    }
+  }
+
+  async function refreshSavedSessions() {
+    try {
+      const sessions = await listSavedSessions(department);
+      setSavedSessions(sessions);
+    } catch {
+      setSavedSessions([]);
     }
   }
 
@@ -81,7 +82,7 @@ export function ActivityPage() {
             <p>{role === "admin" ? "Filter, review, and export scans, rewrites, uploads, policy retrieval, and extension events." : "See your previous compliance checks and what happened in each one."}</p>
           </div>
           <div className="workspace-command-status">
-            <span><GitBranch size={15} /> {role === "admin" ? `${visibleAuditEvents.length} events shown` : "3 saved checks"}</span>
+            <span><GitBranch size={15} /> {role === "admin" ? `${visibleAuditEvents.length} events shown` : `${savedSessions.length} saved checks`}</span>
             <span><MailCheck size={15} /> Gmail ready</span>
           </div>
         </div>
@@ -91,7 +92,16 @@ export function ActivityPage() {
             <section className="ops-card wide">
               <PanelTitle label="Your checks" title="Recent compliance history" />
               <div className="activity-feed">
-                {employeeHistory.map((activity) => (
+                {savedSessions.length ? savedSessions.map((session) => (
+                  <article className="activity-item tone-good" key={session.id}>
+                    <FileText size={16} />
+                    <div>
+                      <strong>{session.documentName}</strong>
+                      <span>{session.department} · {session.team} · score {session.score}</span>
+                    </div>
+                    <time>{new Date(session.createdAt).toLocaleDateString()}</time>
+                  </article>
+                )) : employeeHistory.map((activity) => (
                   <article className="activity-item tone-good" key={activity.title}>
                     <FileText size={16} />
                     <div>
@@ -106,8 +116,8 @@ export function ActivityPage() {
             <section className="ops-card">
               <PanelTitle label="Status" title="Simple summary" />
               <div className="insight-list">
-                <div><CheckCircle2 size={16} /> 1 clean document</div>
-                <div><ShieldCheck size={16} /> 3 safe rewrites used</div>
+                <div><CheckCircle2 size={16} /> {savedSessions.length} saved check{savedSessions.length === 1 ? "" : "s"}</div>
+                <div><ShieldCheck size={16} /> {savedSessions.reduce((total, session) => total + session.report.violations.length, 0)} flagged items total</div>
                 <div><Activity size={16} /> No admin action needed</div>
               </div>
             </section>
@@ -134,16 +144,15 @@ export function ActivityPage() {
                 Export CSV
               </button>
               <div className="insight-list">
-                {aiInsights.slice(0, 2).map((insight) => (
-                  <div key={insight}><Bot size={16} />{insight}</div>
-                ))}
+                <div><Bot size={16} />{visibleAuditEvents.length} backend audit events loaded</div>
+                <div><ShieldCheck size={16} />{visibleAuditEvents.filter((event) => event.status === "open").length} open items awaiting review</div>
               </div>
             </section>
 
             <section className="ops-card wide">
               <PanelTitle label="Compliance log" title="Operational history" />
               <div className="activity-feed audit-feed">
-                {visibleAuditEvents.map((activity) => (
+                {visibleAuditEvents.length ? visibleAuditEvents.map((activity) => (
                   <article className={`activity-item tone-${activity.tone}`} key={activity.id}>
                     <Activity size={16} />
                     <div>
@@ -160,7 +169,15 @@ export function ActivityPage() {
                       )}
                     </div>
                   </article>
-                ))}
+                )) : (
+                  <article className="activity-item tone-good">
+                    <Activity size={16} />
+                    <div>
+                      <strong>No audit events yet</strong>
+                      <span>Once admins upload policies, toggle rules, or users run checks, the backend audit log will appear here.</span>
+                    </div>
+                  </article>
+                )}
               </div>
             </section>
           </div>

@@ -10,10 +10,6 @@
     "noEmit": true,
     "target": "ES2022",
     "types": ["node", "vite/client"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },

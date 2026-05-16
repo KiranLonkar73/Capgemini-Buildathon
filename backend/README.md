@@ -18,8 +18,16 @@ pip install -r requirements.txt
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-3. Run the app:
+3. Run the app (canonical module path):
+
+From the repository root:
 
 ```bash
-uvicorn main:app --reload --port 8000
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+If you prefer to run from within the `backend/` directory, point Uvicorn at the parent directory first:
+
+```bash
+python -m uvicorn --app-dir .. backend.app.main:app --reload --port 8000
 ```

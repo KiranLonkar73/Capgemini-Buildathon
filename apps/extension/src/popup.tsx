@@ -64,6 +64,20 @@ function Popup() {
     }
   }
 
+  async function applyBackendRewrite() {
+    if (!firstViolation) return;
+    setLoading(true);
+    setNotice("");
+    try {
+      setDraft(applyRewrite(draft, firstViolation));
+      setNotice("Suggested rewrite applied.");
+    } catch (error) {
+      setNotice(`Could not fetch backend rewrite. ${error instanceof Error ? error.message.slice(0, 80) : ""}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <main className="popup-shell">
       <header>
@@ -116,7 +130,7 @@ function Popup() {
             <Wand2 size={15} />
             <span>{firstViolation.rewrite}</span>
           </div>
-          <button onClick={() => setDraft(applyRewrite(draft, firstViolation))} type="button">Apply rewrite</button>
+          <button onClick={() => void applyBackendRewrite()} type="button">Apply rewrite</button>
         </motion.section>
       ) : (
         <section className="clean">

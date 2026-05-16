@@ -1,0 +1,1 @@
+Customer data and account IDs must never be shared over email or external channels. Use approved secure transfer workflows only.

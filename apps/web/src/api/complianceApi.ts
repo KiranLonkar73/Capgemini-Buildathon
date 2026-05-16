@@ -1,4 +1,4 @@
-import { API_BASE_URL, type AuditEvent, type ComplianceReport, type Employee, type PolicyReference, type SavedSession } from "@complylens/shared";
+import { API_BASE_URL, type AuditEvent, type ComplianceReport, type Employee, type HealthResponse, type PolicyReference, type RewriteResponse, type SavedSession } from "@complylens/shared";
 
 export async function analyzeDocument(input: {
   text: string;
@@ -14,6 +14,26 @@ export async function analyzeDocument(input: {
   });
   if (!response.ok) throw new Error(await response.text());
   return (await response.json()) as ComplianceReport;
+}
+
+export async function getHealth() {
+  const response = await fetch(`${API_BASE_URL}/health`);
+  if (!response.ok) throw new Error(await response.text());
+  return (await response.json()) as HealthResponse;
+}
+
+export async function rewriteComplianceText(input: {
+  text: string;
+  policyContext?: string;
+  violationId?: string;
+}) {
+  const response = await fetch(`${API_BASE_URL}/rewrite`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return (await response.json()) as RewriteResponse;
 }
 
 export async function analyzeUploadedDocument(file: File, threshold: number, department = "General", team = "Workspace") {

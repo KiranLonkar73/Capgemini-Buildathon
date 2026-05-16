@@ -7,20 +7,10 @@ import {
   type ComplianceReport,
   type Violation
 } from "@complylens/shared";
-import { analyzeDocument, analyzeUploadedDocument, listSavedSessions } from "../api/complianceApi";
-import { NoticeBox } from "../components/common/NoticeBox";
+import { analyzeDocument, analyzeUploadedDocument, getHealth, listAuditEvents, listEmployees, listPolicyVersions } from "../api/complianceApi";
 import { HighlightedEditor } from "../features/compliance/HighlightedEditor";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
-import type { SavedSession } from "@complylens/shared";
-
-type SessionHistoryItem = {
-  id: string;
-  title: string;
-  source: string;
-  risk: string;
-  time: string;
-};
 
 const emptyReport = runDemoComplianceCheck("");
 const departments = ["All", "Legal", "Sales", "HR", "Security", "Finance"];
@@ -28,6 +18,7 @@ const departments = ["All", "Legal", "Sales", "HR", "Security", "Finance"];
 export function DashboardPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [draft, setDraft] = useState("");
+  const [originalText, setOriginalText] = useState("");
   const [documentName, setDocumentName] = useState("No file selected");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [report, setReport] = useState<ComplianceReport>(emptyReport);
@@ -39,12 +30,10 @@ export function DashboardPage() {
   const [notice, setNotice] = useState<Notice>(null);
   const [department, setDepartment] = useState("Sales");
   const [team, setTeam] = useState("Outbound");
-  const [savedSessions, setSavedSessions] = useState<SavedSession[]>([]);
-  const [history, setHistory] = useState<SessionHistoryItem[]>([
-    { id: "hist-1", title: "Sales email draft", source: "Email text", risk: "2 issues fixed", time: "Today" },
-    { id: "hist-2", title: "Vendor NDA", source: "DOCX upload", risk: "Reviewed", time: "Yesterday" },
-    { id: "hist-3", title: "HR announcement", source: "Pasted text", risk: "No issues", time: "May 12" }
-  ]);
+  const [policyChunks, setPolicyChunks] = useState(0);
+  const [policyCount, setPolicyCount] = useState(0);
+  const [openAuditCount, setOpenAuditCount] = useState(0);
+  const [employeeCount, setEmployeeCount] = useState(0);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const visibleViolations = report.violations.filter((violation) => !hiddenIds.includes(violation.id));
@@ -52,33 +41,30 @@ export function DashboardPage() {
   const canAnalyze = Boolean(selectedFile || draft.trim());
 
   useEffect(() => {
-    void refreshSessions();
-  }, [department]);
+    if (role !== "admin") return;
 
-  async function refreshSessions() {
-    try {
-      setSavedSessions(await listSavedSessions(department));
-    } catch {
-      setSavedSessions([]);
+    async function loadAdminSummary() {
+      try {
+        const [health, policies, audits, employees] = await Promise.all([
+          getHealth(),
+          listPolicyVersions(),
+          listAuditEvents("All"),
+          listEmployees()
+        ]);
+        setPolicyChunks(health.policy_chunks);
+        setPolicyCount(policies.length);
+        setOpenAuditCount(audits.filter((event) => event.status === "open").length);
+        setEmployeeCount(employees.length);
+      } catch {
+        setPolicyChunks(0);
+        setPolicyCount(0);
+        setOpenAuditCount(0);
+        setEmployeeCount(0);
+      }
     }
-  }
 
-  function recordHistory(nextReport: ComplianceReport, source: string) {
-    const risk = nextReport.violations.length
-      ? `${nextReport.violations.length} issue${nextReport.violations.length === 1 ? "" : "s"} found`
-      : "No issues";
-
-    setHistory((items) => [
-      {
-        id: crypto.randomUUID(),
-        title: documentName === "No file selected" ? "Typed compliance check" : documentName,
-        source,
-        risk,
-        time: "Just now"
-      },
-      ...items.slice(0, 5)
-    ]);
-  }
+    void loadAdminSummary();
+  }, [role]);
 
   async function runAnalysis() {
     if (!canAnalyze) {
@@ -91,32 +77,30 @@ export function DashboardPage() {
     try {
       if (selectedFile) {
         const result = await analyzeUploadedDocument(selectedFile, 0.62, department, team);
+        setOriginalText(result.text);
         setDraft(result.text);
         setReport(result.report);
         setHasRun(true);
         setActiveId(result.report.violations[0]?.id ?? "");
         setHiddenIds([]);
-        recordHistory(result.report, selectedFile.name.split(".").pop()?.toUpperCase() ?? "Upload");
-        void refreshSessions();
         setNotice({ kind: "success", text: `Analysis completed for ${selectedFile.name}.` });
         return;
       }
 
       const nextReport = await analyzeDocument({ text: draft, documentName, threshold: 0.62, department, team });
+      setOriginalText(draft);
       setReport(nextReport);
       setHasRun(true);
       setActiveId(nextReport.violations[0]?.id ?? "");
       setHiddenIds([]);
-      recordHistory(nextReport, "Typed text");
-      void refreshSessions();
       setNotice({ kind: "success", text: "Analysis completed with policy citations." });
     } catch (error) {
       const fallback = runDemoComplianceCheck(draft);
+      setOriginalText(draft);
       setReport(fallback);
       setHasRun(true);
       setActiveId(fallback.violations[0]?.id ?? "");
       setHiddenIds([]);
-      recordHistory(fallback, selectedFile ? "Upload fallback" : "Text fallback");
       setNotice({
         kind: "error",
         text: `Backend unavailable, showing local analysis. ${error instanceof Error ? error.message.slice(0, 120) : ""}`
@@ -129,6 +113,7 @@ export function DashboardPage() {
   async function selectFile(file: File) {
     setSelectedFile(file);
     setDocumentName(file.name);
+    setOriginalText("");
     setHasRun(false);
     setReport(emptyReport);
     setActiveId("");
@@ -176,6 +161,7 @@ export function DashboardPage() {
 
   function startNextUpload() {
     setDraft("");
+    setOriginalText("");
     setDocumentName("No file selected");
     setSelectedFile(null);
     setReport(emptyReport);
@@ -186,11 +172,18 @@ export function DashboardPage() {
     fileRef.current?.click();
   }
 
-  function applyViolationRewrite(violation: Violation) {
-    const nextDraft = applyRewrite(draft, violation);
-    setDraft(nextDraft);
-    setHiddenIds((ids) => [...new Set([...ids, violation.id])]);
-    setNotice({ kind: "success", text: "Rewrite applied to the document draft." });
+  async function applyViolationRewrite(violation: Violation) {
+    try {
+      const nextDraft = applyRewrite(draft, violation);
+      setDraft(nextDraft);
+      setHiddenIds((ids) => [...new Set([...ids, violation.id])]);
+      setNotice({ kind: "success", text: "Suggested rewrite applied to the document draft." });
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        text: `Could not fetch backend rewrite. ${error instanceof Error ? error.message.slice(0, 120) : ""}`
+      });
+    }
   }
 
   function exportReportPdf() {
@@ -243,13 +236,13 @@ export function DashboardPage() {
             <Link className="admin-dashboard-card primary" to="/policies">
               <Database size={20} />
               <span>Policy memory</span>
-              <strong>829 chunks indexed</strong>
+              <strong>{policyChunks} chunks indexed</strong>
               <small>Upload company rules and monitor retrieval health.</small>
             </Link>
             <Link className="admin-dashboard-card" to="/audit">
               <History size={20} />
               <span>Audit trail</span>
-              <strong>7 open events</strong>
+              <strong>{openAuditCount} open events</strong>
               <small>Review scans, rewrites, uploads, and extension activity.</small>
             </Link>
             <Link className="admin-dashboard-card" to="/settings">
@@ -261,7 +254,7 @@ export function DashboardPage() {
             <Link className="admin-dashboard-card" to="/settings">
               <UsersRound size={20} />
               <span>Team access</span>
-              <strong>12 employees</strong>
+              <strong>{employeeCount} employees</strong>
               <small>Invite employees and keep policy upload admin-only.</small>
             </Link>
           </div>
@@ -277,8 +270,8 @@ export function DashboardPage() {
               </div>
               <div className="admin-report-grid">
                 <div><BarChart3 size={17} /><span>Risk stopped</span><strong>38</strong><small>messages blocked before sending</small></div>
-                <div><ShieldCheck size={17} /><span>Rewrite adoption</span><strong>74%</strong><small>safe rewrites accepted</small></div>
-                <div><AlertTriangle size={17} /><span>Open escalations</span><strong>7</strong><small>need reviewer decision</small></div>
+                <div><ShieldCheck size={17} /><span>Policy versions</span><strong>{policyCount}</strong><small>live records from backend storage</small></div>
+                <div><AlertTriangle size={17} /><span>Open escalations</span><strong>{openAuditCount}</strong><small>need reviewer decision</small></div>
               </div>
             </section>
             <section className="ops-card">
@@ -363,7 +356,7 @@ export function DashboardPage() {
                     setDraft(event.target.value);
                     setSelectedFile(null);
                     setDocumentName("Typed compliance check");
-                    setHasRun(false);
+                    setNotice({ kind: "success", text: "Draft updated. Run Analysis again to refresh the findings." });
                   }}
                   placeholder="Write or paste text here if you do not want to upload a file."
                   value={draft}
@@ -407,7 +400,33 @@ export function DashboardPage() {
                       <FileText size={16} />
                       Original document with highlighted risks
                     </div>
-                    <HighlightedEditor draft={draft} mode="preview" onSelectViolation={setActiveId} violations={visibleViolations} />
+                    <HighlightedEditor draft={originalText || draft} mode="preview" onSelectViolation={setActiveId} violations={visibleViolations} />
+                  </div>
+
+                  <div className="result-document-pane">
+                    <div className="result-pane-title">
+                      <FileText size={16} />
+                      Editable draft
+                    </div>
+                    <label className="editor-pane editor-pane--input">
+                      <span>Draft</span>
+                      <textarea
+                        aria-label="Editable compliance draft"
+                        className="document-textarea"
+                        onChange={(event) => {
+                          setDraft(event.target.value);
+                          setNotice({ kind: "success", text: "Draft updated. Run Analysis again to refresh the findings." });
+                        }}
+                        placeholder="Edit the draft here after rewrites are applied."
+                        value={draft}
+                      />
+                    </label>
+                    <div className="analysis-action-row analysis-action-row--inline">
+                      <button className="primary-work-action run-analysis-button" disabled={loading || !canAnalyze} onClick={() => void runAnalysis()} type="button">
+                        <ArrowUp size={16} />
+                        {loading ? "Running analysis..." : "Run Analysis again"}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="result-cards-pane">
@@ -452,33 +471,6 @@ export function DashboardPage() {
             )}
           </section>
 
-          <aside className="employee-history-panel">
-            {notice && (
-              <div className="history-notice" role="status">
-                <NoticeBox notice={notice} onClose={() => setNotice(null)} />
-              </div>
-            )}
-            <div className="rail-header">
-              <strong><History size={16} /> Session history</strong>
-              <span>{history.length} checks</span>
-            </div>
-            <div className="history-list">
-              {savedSessions.map((session) => (
-                <button key={session.id} type="button">
-                  <strong>{session.documentName}</strong>
-                  <span>{session.department} · {session.team}</span>
-                  <small>{session.flaggedSections} issues · score {session.score}</small>
-                </button>
-              ))}
-              {history.map((item) => (
-                <button key={item.id} type="button">
-                  <strong>{item.title}</strong>
-                  <span>{item.source}</span>
-                  <small>{item.risk} · {item.time}</small>
-                </button>
-              ))}
-            </div>
-          </aside>
         </div>
       </section>
     </WorkspaceShell>

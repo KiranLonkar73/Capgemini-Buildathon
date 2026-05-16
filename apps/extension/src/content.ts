@@ -1,12 +1,25 @@
-import { applyRewrite, runDemoComplianceCheck, type ComplianceReport, type Violation } from "@complylens/shared";
+import { applyRewrite, runDemoComplianceCheck, type ComplianceReport, type RewriteResponse, type Violation } from "@complylens/shared";
 
 const FAB_ID = "complylens-gmail-fab";
 const TOOLTIP_ID = "complylens-gmail-tooltip";
 
 type TooltipState = "loading" | "ready" | "error";
 
+type DraftSnapshot = {
+  subject: string;
+  body: string;
+  combined: string;
+};
+
+const AUTO_SCAN_IDLE_MS = 900;
+const AUTO_SCAN_MIN_BODY_CHARS = 12;
+const AUTO_SCAN_MIN_SUBJECT_CHARS = 3;
+
 let latestReport: ComplianceReport | null = null;
-let latestText = "";
+let latestSubject = "";
+let latestBody = "";
+let latestCombined = "";
+let lastScanAt = 0;
 let liveScanTimer = 0;
 
 function getApiBaseUrl() {
@@ -18,7 +31,17 @@ function getApiBaseUrl() {
 }
 
 function getCompose() {
-  return document.querySelector<HTMLElement>('[role="textbox"][aria-label*="Message Body"]');
+  const candidates = Array.from(
+    document.querySelectorAll<HTMLElement>('[role="textbox"][aria-label*="Message Body"]')
+  );
+  if (!candidates.length) return null;
+
+  const visible = candidates.filter((element) => {
+    if (element.getAttribute("aria-hidden") === "true") return false;
+    return element.getClientRects().length > 0;
+  });
+
+  return (visible.length ? visible[visible.length - 1] : candidates[candidates.length - 1]) ?? null;
 }
 
 function getComposeText() {
@@ -31,6 +54,40 @@ function getComposeAnchor() {
   return compose.closest<HTMLElement>('div[role="dialog"]') ?? compose;
 }
 
+function getSubjectInput() {
+  const anchor = getComposeAnchor();
+  if (!anchor) return null;
+  return anchor.querySelector<HTMLInputElement>('input[name="subjectbox"], textarea[name="subjectbox"]');
+}
+
+function getSubjectText() {
+  return getSubjectInput()?.value ?? "";
+}
+
+function setSubjectText(text: string) {
+  const subject = getSubjectInput();
+  if (!subject) return false;
+  subject.focus();
+  subject.value = text;
+  subject.dispatchEvent(new Event("input", { bubbles: true }));
+  return true;
+}
+
+function getDraftSnapshot(): DraftSnapshot {
+  const subject = getSubjectText().trim();
+  const body = getComposeText().trim();
+  const combined = [subject ? `Subject: ${subject}` : "", body ? `Body:\n${body}` : ""]
+    .filter(Boolean)
+    .join("\n\n");
+  return { subject, body, combined };
+}
+
+function setLatestSnapshot(snapshot: DraftSnapshot) {
+  latestSubject = snapshot.subject;
+  latestBody = snapshot.body;
+  latestCombined = snapshot.combined;
+}
+
 function setComposeText(text: string) {
   const compose = getCompose();
   if (!compose) return false;
@@ -41,14 +98,58 @@ function setComposeText(text: string) {
 }
 
 async function analyzeDraft(text: string) {
+  const payload = { text, documentName: "gmail-draft", threshold: 0.62 };
+
+  // Prefer extension-level fetch via background service worker to avoid CORS from page origin.
+  if (chrome.runtime && chrome.runtime.sendMessage) {
+    return new Promise<ComplianceReport>((resolve, reject) => {
+      chrome.runtime.sendMessage({ type: "analyze", payload }, (response) => {
+        if (!response) return reject(new Error("No response from background"));
+        if (!response.ok) return reject(new Error(response.text || response.error || `status=${response.status}`));
+        try {
+          resolve(response.json as ComplianceReport);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+  }
+
   const apiBaseUrl = await getApiBaseUrl();
   const response = await fetch(`${apiBaseUrl}/analyze`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, documentName: "gmail-draft", threshold: 0.62 })
+    body: JSON.stringify(payload),
   });
   if (!response.ok) throw new Error(await response.text());
   return (await response.json()) as ComplianceReport;
+}
+
+async function rewriteDraftText(text: string, policyContext?: string) {
+  const payload = { text, policyContext };
+
+  if (chrome.runtime && chrome.runtime.sendMessage) {
+    return new Promise<RewriteResponse>((resolve, reject) => {
+      chrome.runtime.sendMessage({ type: "rewrite", payload }, (response) => {
+        if (!response) return reject(new Error("No response from background"));
+        if (!response.ok) return reject(new Error(response.text || response.error || `status=${response.status}`));
+        try {
+          resolve(response.json as RewriteResponse);
+        } catch (err) {
+          reject(err);
+        }
+      });
+    });
+  }
+
+  const apiBaseUrl = await getApiBaseUrl();
+  const response = await fetch(`${apiBaseUrl}/rewrite`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return (await response.json()) as RewriteResponse;
 }
 
 function setStyles(element: HTMLElement, styles: Partial<CSSStyleDeclaration>) {
@@ -80,9 +181,9 @@ function ensureFab() {
     height: "46px",
     border: "0",
     borderRadius: "999px",
-    background: "linear-gradient(135deg,#4f46e5,#7c3aed 55%,#f59e0b)",
+    background: "linear-gradient(135deg,#1e3a8a,#6366f1 55%,#22c55e)",
     color: "#fff",
-    font: "800 12px Inter,system-ui,sans-serif",
+    font: "800 12px 'Space Grotesk','IBM Plex Sans','Work Sans',sans-serif",
     letterSpacing: "0.06em",
     boxShadow: "0 18px 40px rgba(79,70,229,.28)",
     cursor: "pointer",
@@ -101,14 +202,14 @@ function ensureTooltip() {
   setStyles(tooltip, {
     position: "fixed",
     zIndex: "2147483647",
-    width: "320px",
+    width: "332px",
     padding: "14px",
-    border: "1px solid rgba(148,163,184,.2)",
+    border: "1px solid rgba(148,163,184,.22)",
     borderRadius: "18px",
-    background: "rgba(255,255,255,.96)",
+    background: "linear-gradient(160deg, rgba(255,255,255,.98), rgba(248,250,252,.9))",
     color: "#0f172a",
-    font: "13px Inter,system-ui,sans-serif",
-    boxShadow: "0 18px 42px rgba(15,23,42,.18)",
+    font: "13px 'Space Grotesk','IBM Plex Sans','Work Sans',sans-serif",
+    boxShadow: "0 20px 46px rgba(15,23,42,.18)",
     backdropFilter: "blur(14px)",
     display: "none"
   });
@@ -160,12 +261,12 @@ function positionFab() {
   fab.style.top = `${Math.max(16, rect.bottom - 56)}px`;
 }
 
-function positionTooltip(quote?: string) {
+function positionTooltip(quote?: string, source: "Subject" | "Body" = "Body") {
   const tooltip = ensureTooltip();
   const anchor = getComposeAnchor();
   if (!anchor) return;
 
-  const quoteRect = quote ? findQuoteRect(quote) : null;
+  const quoteRect = quote && source === "Body" ? findQuoteRect(quote) : null;
   const anchorRect = quoteRect ?? anchor.getBoundingClientRect();
   const top = Math.max(16, anchorRect.top - 12);
   const left = Math.min(window.innerWidth - 336, anchorRect.right + 12);
@@ -189,6 +290,10 @@ function actionButton(label: string, accent = false) {
   return button;
 }
 
+function isSubjectViolation(violation: Violation) {
+  return Boolean(violation.quote) && latestSubject.includes(violation.quote);
+}
+
 function renderTooltip(state: TooltipState, message = "") {
   const tooltip = ensureTooltip();
   tooltip.replaceChildren();
@@ -203,7 +308,7 @@ function renderTooltip(state: TooltipState, message = "") {
   });
 
   const title = createElement("strong", { text: "ComplyLens" });
-  setStyles(title, { fontSize: "14px" });
+  setStyles(title, { fontSize: "14px", letterSpacing: "0.02em" });
   header.append(title);
 
   if (latestReport) {
@@ -211,13 +316,31 @@ function renderTooltip(state: TooltipState, message = "") {
     setStyles(score, {
       padding: "4px 8px",
       borderRadius: "999px",
-      background: latestReport.flaggedSections ? "rgba(251,191,36,.18)" : "rgba(16,185,129,.16)",
+      background: latestReport.flaggedSections ? "rgba(251,191,36,.2)" : "rgba(16,185,129,.16)",
       color: latestReport.flaggedSections ? "#92400e" : "#047857",
       fontWeight: "800"
     });
     header.append(score);
   }
   tooltip.append(header);
+
+  const meta = createElement("div");
+  setStyles(meta, {
+    display: "grid",
+    gap: "6px",
+    marginBottom: "10px",
+    padding: "10px",
+    borderRadius: "14px",
+    border: "1px solid rgba(148,163,184,.16)",
+    background: "rgba(248,250,252,.8)"
+  });
+  const subjectText = latestSubject || "No subject yet";
+  const subjectLine = createElement("div", { text: `Subject: ${subjectText}` });
+  setStyles(subjectLine, { fontWeight: "700", color: "#1f2937" });
+  const bodyMeta = createElement("div", { text: `Body: ${latestBody ? `${latestBody.split(/\s+/).filter(Boolean).length} words` : "empty"}` });
+  setStyles(bodyMeta, { color: "#64748b" });
+  meta.append(subjectLine, bodyMeta);
+  tooltip.append(meta);
 
   if (state === "loading") {
     tooltip.append(createElement("p", { text: "Scanning this draft..." }));
@@ -248,7 +371,8 @@ function renderTooltip(state: TooltipState, message = "") {
 
   tooltip.append(violationCard(violation));
   tooltip.style.display = "block";
-  positionTooltip(violation.quote);
+  const source = isSubjectViolation(violation) ? "Subject" : "Body";
+  positionTooltip(violation.quote, source);
 }
 
 function violationCard(violation: Violation) {
@@ -264,7 +388,8 @@ function violationCard(violation: Violation) {
   });
   const policyTitle = createElement("strong", { text: "Policy reference" });
   setStyles(policyTitle, { display: "block", marginBottom: "4px" });
-  const policyText = createElement("span", { text: violation.policySection });
+  const source = isSubjectViolation(violation) ? "Subject" : "Body";
+  const policyText = createElement("span", { text: `${violation.policySection} | ${source}` });
   policyRef.append(policyTitle, policyText);
 
   const why = createElement("div");
@@ -296,7 +421,7 @@ function violationCard(violation: Violation) {
   setStyles(actions, { display: "flex", gap: "8px", flexWrap: "wrap" });
 
   const apply = actionButton("Apply rewrite", true);
-  apply.addEventListener("click", () => applyFirstRewrite());
+  apply.addEventListener("click", () => void applyFirstRewrite());
 
   const rescan = actionButton("Rescan");
   rescan.addEventListener("click", () => void scanDraft());
@@ -309,23 +434,47 @@ function violationCard(violation: Violation) {
   return wrap;
 }
 
-function applyFirstRewrite() {
+async function applyFirstRewrite() {
   const violation = latestReport?.violations[0];
   if (!violation) return;
-  const nextText = applyRewrite(latestText, violation);
-  if (!setComposeText(nextText)) {
-    renderTooltip("error", "Could not update the current Gmail compose box.");
-    return;
+  const appliesToSubject = isSubjectViolation(violation);
+  let snapshot: DraftSnapshot | null = null;
+  try {
+    const nextSubject = appliesToSubject ? applyRewrite(latestSubject, violation) : latestSubject;
+    const nextBody = appliesToSubject ? latestBody : applyRewrite(latestBody, violation);
+    if (appliesToSubject) {
+      if (!setSubjectText(nextSubject)) {
+        renderTooltip("error", "Could not update the Gmail subject field.");
+        return;
+      }
+    } else if (!setComposeText(nextBody)) {
+      renderTooltip("error", "Could not update the current Gmail compose box.");
+      return;
+    }
+    snapshot = {
+      subject: nextSubject,
+      body: nextBody,
+      combined: [nextSubject ? `Subject: ${nextSubject}` : "", nextBody ? `Body:\n${nextBody}` : ""]
+        .filter(Boolean)
+        .join("\n\n")
+    };
+    setLatestSnapshot(snapshot);
+    try {
+      latestReport = await analyzeDraft(snapshot.combined);
+    } catch {
+      latestReport = runDemoComplianceCheck(snapshot.combined);
+    }
+    lastScanAt = Date.now();
+    renderTooltip("ready");
+  } catch (error) {
+    renderTooltip("error", `Backend rewrite unavailable. ${error instanceof Error ? error.message.slice(0, 120) : ""}`);
   }
-  latestText = nextText;
-  latestReport = runDemoComplianceCheck(nextText);
-  renderTooltip("ready");
 }
 
-async function scanDraft() {
-  const text = getComposeText();
-  latestText = text;
-  if (!text.trim()) {
+async function scanDraft(snapshot?: DraftSnapshot) {
+  const next = snapshot ?? getDraftSnapshot();
+  setLatestSnapshot(next);
+  if (!next.subject && !next.body) {
     latestReport = null;
     renderTooltip("error", "Open a Gmail compose window and enter draft text first.");
     return;
@@ -333,10 +482,12 @@ async function scanDraft() {
 
   renderTooltip("loading");
   try {
-    latestReport = await analyzeDraft(text);
+    latestReport = await analyzeDraft(next.combined);
+    lastScanAt = Date.now();
     renderTooltip("ready");
   } catch (error) {
-    latestReport = runDemoComplianceCheck(text);
+    latestReport = runDemoComplianceCheck(next.combined);
+    lastScanAt = Date.now();
     renderTooltip(
       "ready",
       `Backend unavailable, showing local analysis. ${error instanceof Error ? error.message.slice(0, 120) : ""}`
@@ -347,10 +498,13 @@ async function scanDraft() {
 function scheduleLiveScan() {
   window.clearTimeout(liveScanTimer);
   liveScanTimer = window.setTimeout(() => {
-    if (ensureTooltip().style.display !== "none" && getComposeText() !== latestText) {
-      void scanDraft();
-    }
-  }, 900);
+    const next = getDraftSnapshot();
+    const shouldScan = next.body.length >= AUTO_SCAN_MIN_BODY_CHARS || next.subject.length >= AUTO_SCAN_MIN_SUBJECT_CHARS;
+    if (!shouldScan) return;
+    if (next.combined === latestCombined) return;
+    if (Date.now() - lastScanAt < 1100) return;
+    void scanDraft(next);
+  }, AUTO_SCAN_IDLE_MS);
 }
 
 function bootstrap() {

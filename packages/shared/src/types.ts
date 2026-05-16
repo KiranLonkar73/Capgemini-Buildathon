@@ -62,11 +62,21 @@ export type RewriteRequest = {
   policyContext?: string;
 };
 
+export type RewriteResponse = {
+  rewrite: string;
+};
+
 export type CompanySettings = {
   organizationId: string;
   organizationName: string;
   threshold: number;
   activePolicySet: string;
+};
+
+export type HealthResponse = {
+  ok: boolean;
+  service: string;
+  policy_chunks: number;
 };
 
 export type Employee = {

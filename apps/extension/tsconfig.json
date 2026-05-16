@@ -10,10 +10,6 @@
     "noEmit": true,
     "target": "ES2022",
     "types": ["chrome", "node"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["../web/src/*"]
-    },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },

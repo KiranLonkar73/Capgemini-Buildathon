@@ -35,6 +35,34 @@ export function runDemoComplianceCheck(text: string): ComplianceReport {
 }
 
 export function applyRewrite(text: string, violation: Violation) {
-  if (!violation.quote || !text.includes(violation.quote)) return text;
-  return text.replace(violation.quote, violation.rewrite);
+  const quote = violation.quote.trim();
+  const rewrite = violation.rewrite.trim();
+  if (!quote || !rewrite) return text;
+
+  const normalized = (value: string) => value.replace(/\s+/g, " ").trim();
+  const exactIndex = text.indexOf(quote);
+  if (exactIndex >= 0) {
+    return text.slice(0, exactIndex) + rewrite + text.slice(exactIndex + quote.length);
+  }
+
+  const caseInsensitiveIndex = text.toLowerCase().indexOf(quote.toLowerCase());
+  if (caseInsensitiveIndex >= 0) {
+    return text.slice(0, caseInsensitiveIndex) + rewrite + text.slice(caseInsensitiveIndex + quote.length);
+  }
+
+  // Fuzzy lookup: match by normalized whitespace and punctuation-free tokens.
+  const quoteTokens = normalized(quote)
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((token) => token.length > 1)
+    .map((token) => token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+
+  if (!quoteTokens.length) return text;
+
+  const quotePattern = quoteTokens.join("[^\p{L}\p{N}]+") || quoteTokens.join("\\s+");
+  const regex = new RegExp(quotePattern, "iu");
+  const match = regex.exec(text);
+  if (!match || match.index == null) return text;
+
+  return text.slice(0, match.index) + rewrite + text.slice(match.index + match[0].length);
 }

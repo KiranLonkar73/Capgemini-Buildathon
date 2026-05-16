@@ -1,23 +1,32 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Database, FileSearch, GitBranch, ShieldCheck, Upload } from "lucide-react";
-import { samplePolicies, type PolicyReference } from "@complylens/shared";
-import { listPolicyVersions, togglePolicyReference, uploadPolicyDocument } from "../api/complianceApi";
+import { type PolicyReference } from "@complylens/shared";
+import { getHealth, listPolicyVersions, togglePolicyReference, uploadPolicyDocument } from "../api/complianceApi";
 import { NoticeBox } from "../components/common/NoticeBox";
 import { PanelTitle } from "../components/common/PanelTitle";
 import { WorkspaceShell } from "../layouts/WorkspaceShell";
 import type { Notice } from "../types";
-import { policySystems } from "../data/productData";
 
 export function PoliciesPage() {
   const role = typeof window !== "undefined" && window.localStorage.getItem("complylens-role") === "admin" ? "admin" : "employee";
   const [notice, setNotice] = useState<Notice>(null);
   const [uploading, setUploading] = useState(false);
-  const [policyRows, setPolicyRows] = useState(samplePolicies);
   const [policyVersions, setPolicyVersions] = useState<PolicyReference[]>([]);
+  const [policyChunks, setPolicyChunks] = useState<number>(0);
 
   useEffect(() => {
     void refreshPolicyVersions();
+    void refreshHealth();
   }, []);
+
+  async function refreshHealth() {
+    try {
+      const health = await getHealth();
+      setPolicyChunks(health.policy_chunks);
+    } catch {
+      setPolicyChunks(0);
+    }
+  }
 
   async function refreshPolicyVersions() {
     try {
@@ -34,17 +43,8 @@ export function PoliciesPage() {
     setNotice(null);
     try {
       const result = await uploadPolicyDocument(file);
-      setPolicyRows((rows) => [
-        {
-          id: `uploaded-${file.name}`,
-          policy: file.name,
-          section: `${result.chunks} retrieved chunks`,
-          rule: "Uploaded company policy is now available to retrieval.",
-          owner: "Legal"
-        },
-        ...rows
-      ]);
       await refreshPolicyVersions();
+      await refreshHealth();
       setNotice({ kind: "success", text: `Uploaded ${file.name} and indexed ${result.chunks} policy chunks.` });
     } catch (error) {
       setNotice({
@@ -83,8 +83,8 @@ export function PoliciesPage() {
             <p>Upload company rules, monitor indexing health, and manage the retrieval memory behind every scan.</p>
           </div>
           <div className="workspace-command-status">
-            <span><Database size={15} /> 829 chunks indexed</span>
-            <span><GitBranch size={15} /> 94% retrieval health</span>
+            <span><Database size={15} /> {policyChunks} chunks indexed</span>
+            <span><GitBranch size={15} /> Live backend health</span>
           </div>
         </div>
         {notice && <NoticeBox notice={notice} onClose={() => setNotice(null)} />}
@@ -99,9 +99,9 @@ export function PoliciesPage() {
               <input accept=".pdf,.doc,.docx,.eml,.html,.htm,.md,.rtf,.txt" disabled={uploading} onChange={uploadPolicy} type="file" />
             </label>
             <div className="policy-health-grid">
-              <div><strong>Indexed chunks</strong><span>829</span></div>
-              <div><strong>Last sync</strong><span>12m ago</span></div>
-              <div><strong>Coverage areas</strong><span>Legal, HR, Security, Finance</span></div>
+              <div><strong>Indexed chunks</strong><span>{policyChunks}</span></div>
+              <div><strong>Loaded policies</strong><span>{policyVersions.length}</span></div>
+              <div><strong>Coverage areas</strong><span>{Array.from(new Set(policyVersions.map((policy) => policy.owner))).join(", ") || "None"}</span></div>
             </div>
             <div className="policy-table">
               {policyVersions.map((policy) => (
@@ -117,34 +117,42 @@ export function PoliciesPage() {
                   </button>
                 </article>
               ))}
-              {policyRows.map((policy) => (
-                <article className="policy-row wide" key={policy.id}>
-                  <span>{policy.owner}</span>
+              {!policyVersions.length && (
+                <article className="policy-row wide">
+                  <span>Compliance</span>
                   <div>
-                    <strong>{policy.policy}</strong>
-                    <small>{policy.section}</small>
-                    <p>{policy.rule}</p>
+                    <strong>No policies loaded</strong>
+                    <small>Upload a company policy to populate the retrieval memory.</small>
                   </div>
                 </article>
-              ))}
+              )}
             </div>
           </div>
           <aside className="ops-card">
             <PanelTitle label="Coverage" title="Active systems" />
             <div className="policy-system-list">
-              {policySystems.map((policy) => (
-                <div key={policy.name}>
+              {policyVersions.length ? (
+                policyVersions.map((policy) => (
+                  <div key={policy.id}>
+                    <ShieldCheck size={16} />
+                    <span>{policy.policy}</span>
+                    <strong>{policy.enabled === false ? "Disabled" : "Enabled"}</strong>
+                    <small>{policy.section} · {policy.owner}</small>
+                  </div>
+                ))
+              ) : (
+                <div>
                   <ShieldCheck size={16} />
-                  <span>{policy.name}</span>
-                  <strong>{policy.coverage}%</strong>
-                  <small>{policy.passages} passages · {policy.owner}</small>
+                  <span>Waiting for policy uploads</span>
+                  <strong>0</strong>
+                  <small>Backend policies will appear here once loaded.</small>
                 </div>
-              ))}
+              )}
             </div>
             <div className="policy-health">
               <FileSearch size={18} />
-              <strong>Retrieval health: high</strong>
-              <span>Policy chunks are returning cited context for 94% of flagged messages.</span>
+              <strong>Retrieval health: live</strong>
+              <span>Policy chunks and toggles are sourced from the backend policy store.</span>
             </div>
           </aside>
         </div>

@@ -81,27 +81,26 @@ async def extract_text_from_upload(file: UploadFile) -> str:
 
     if filename.endswith(".pdf"):
         try:
-            try:
-                import fitz
-            except ImportError:
-                from pypdf import PdfReader
-            else:
-                return _extract_pdf_with_pymupdf(data)
-        except Exception:
-            # Fall back to pypdf
+            import fitz
+        except ImportError:
             try:
                 from pypdf import PdfReader
             except ImportError as exc:
                 raise RuntimeError("PDF parsing requires pypdf. Install backend/requirements.txt.") from exc
 
+            reader = PdfReader(BytesIO(data))
+            return "\n\n".join(page.extract_text() or "" for page in reader.pages).strip()
+
+        return _extract_pdf_with_pymupdf(data)
+
+    if filename.endswith(".docx"):
         try:
-            from pypdf import PdfReader
-        except ImportError as exc:
-            raise RuntimeError("PDF parsing requires pypdf. Install backend/requirements.txt.") from exc
+            from docx import Document
+        except ImportError as exc:  # pragma: no cover - dependency guard
+            raise RuntimeError("DOCX parsing requires python-docx. Install backend/requirements.txt.") from exc
 
-        reader = PdfReader(BytesIO(data))
-        return "\n\n".join(page.extract_text() or "" for page in reader.pages).strip()
-
+        document = Document(BytesIO(data))
+        return "\n".join(paragraph.text for paragraph in document.paragraphs).strip()
 
 def _extract_pdf_with_pymupdf(data: bytes) -> str:
     """Extract PDF using PyMuPDF with block-sorting for better reading order.
@@ -141,15 +140,6 @@ def _extract_pdf_with_pymupdf(data: bytes) -> str:
     
     doc.close()
     return "\n\n".join(pages_text).strip()
-
-    if filename.endswith(".docx"):
-        try:
-            from docx import Document
-        except ImportError as exc:  # pragma: no cover - dependency guard
-            raise RuntimeError("DOCX parsing requires python-docx. Install backend/requirements.txt.") from exc
-
-        document = Document(BytesIO(data))
-        return "\n".join(paragraph.text for paragraph in document.paragraphs).strip()
 
     if filename.endswith((".doc", ".rtf")):
         if sys.platform != "darwin":
